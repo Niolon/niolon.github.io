@@ -1,0 +1,1208 @@
+<!DOCTYPE html>
+<head>
+    <meta charset="UTF-8">
+</head>
+<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+<!-- three.js library -->
+<script src='js/three.min.js'></script>
+<!-- ar.js -->
+<script src="js/ar.js"></script>
+<script>THREEx.ArToolkitContext.baseURL = '.'</script>
+
+<body style='margin : 0px; overflow: hidden; font-family: Monospace;'><div style='position: absolute; top: 10px; width:100%; text-align: center; z-index: 1;'>
+<script>
+	//////////////////////////////////////////////////////////////////////////////////
+	//		Init
+	//////////////////////////////////////////////////////////////////////////////////
+
+	// init renderer
+	var renderer	= new THREE.WebGLRenderer({
+		antialias: true,
+		alpha: true
+	});
+	renderer.setClearColor(new THREE.Color('lightgrey'), 0)
+	renderer.setSize( 640, 480 );
+	renderer.domElement.style.position = 'absolute'
+	renderer.domElement.style.top = '0px'
+	renderer.domElement.style.left = '0px'
+	document.body.appendChild( renderer.domElement );
+
+	// array of functions for the rendering loop
+	var onRenderFcts= [];
+
+	// init scene and camera
+    var scene	= new THREE.Scene();
+
+	//////////////////////////////////////////////////////////////////////////////////
+	//		Initialize a basic camera
+	//////////////////////////////////////////////////////////////////////////////////
+
+	// Create a camera
+	var camera = new THREE.Camera();
+	scene.add(camera);
+
+	////////////////////////////////////////////////////////////////////////////////
+	//          handle arToolkitSource
+	////////////////////////////////////////////////////////////////////////////////
+
+	var arToolkitSource = new THREEx.ArToolkitSource({
+		// to read from the webcam
+		sourceType : 'webcam',
+
+		// // to read from an image
+		// sourceType : 'image',
+		// sourceUrl : THREEx.ArToolkitContext.baseURL + '../data/images/img.jpg',
+
+		// to read from a video
+		// sourceType : 'video',
+		// sourceUrl : THREEx.ArToolkitContext.baseURL + '../data/videos/headtracking.mp4',
+	})
+
+	arToolkitSource.init(function onReady(){
+        setTimeout(() => {
+            onResize()
+        }, 2000);
+	})
+
+	// handle resize
+	window.addEventListener('resize', function(){
+		onResize()
+    })
+
+	function onResize(){
+		arToolkitSource.onResizeElement()
+		arToolkitSource.copyElementSizeTo(renderer.domElement)
+		if( arToolkitContext.arController !== null ){
+			arToolkitSource.copyElementSizeTo(arToolkitContext.arController.canvas)
+		}
+	}
+	////////////////////////////////////////////////////////////////////////////////
+	//          initialize arToolkitContext
+	////////////////////////////////////////////////////////////////////////////////
+
+
+	// create atToolkitContext
+	var arToolkitContext = new THREEx.ArToolkitContext({
+		cameraParametersUrl: THREEx.ArToolkitContext.baseURL + './js/camera_para.dat',
+		detectionMode: 'mono',
+	})
+	// initialize it
+	arToolkitContext.init(function onCompleted(){
+		// copy projection matrix to camera
+		camera.projectionMatrix.copy( arToolkitContext.getProjectionMatrix() );
+	})
+
+	// update artoolkit on every frame
+	onRenderFcts.push(function(){
+		if( arToolkitSource.ready === false )	return
+
+		arToolkitContext.update( arToolkitSource.domElement )
+
+		// update scene.visible if the marker is seen
+		scene.visible = camera.visible
+	})
+
+	////////////////////////////////////////////////////////////////////////////////
+	//          Create a ArMarkerControls
+	////////////////////////////////////////////////////////////////////////////////
+
+	// init controls for camera
+	var markerControls = new THREEx.ArMarkerControls(arToolkitContext, camera, {
+		type : 'barcode',
+		patternUrl : './bar/0.png',
+		// patternUrl : THREEx.ArToolkitContext.baseURL + '../data/data/patt.kanji',
+		// as we controls the camera, set changeMatrixMode: 'cameraTransformMatrix'
+		changeMatrixMode: 'cameraTransformMatrix'
+	})
+	// as we do changeMatrixMode: 'cameraTransformMatrix', start with invisible scene
+	scene.visible = false
+
+	//////////////////////////////////////////////////////////////////////////////////
+	//		add an object in the scene
+	//////////////////////////////////////////////////////////////////////////////////
+
+    
+    var sphere_geom = new THREE.SphereBufferGeometry(1, 12, 12);
+    var marker_geom = new THREE.CylinderBufferGeometry(1, 1, 0.2, 12, 1, true);
+
+
+    //S001
+        mat = new THREE.MeshPhysicalMaterial({color:"#ffff30"});
+        mesh = new THREE.Mesh(sphere_geom, mat);
+        mesh.scale.x = 0.05439917835898738;
+        mesh.scale.y = 0.04146449030085299;
+        mesh.scale.z = 0.042672406634235514;
+        m = new THREE.Matrix4();
+        m.set(-0.6657821734232129, 0.7025697438925991, -0.2512565472152896, 0, 
+              0.3238451829562796, 0.5754578331774484, 0.7509810781309546, 0,
+              0.6722041319628109, 0.41862159189583564, -0.6106533941367389, 0,
+              0,            0,            0,            1);
+        mesh.setRotationFromMatrix(m);
+        mesh.position.x = -0.30522444738899807;
+        mesh.position.y = 0.3297293861300188;
+        mesh.position.z = -0.38318516843377876;
+        scene.add(mesh);
+
+        mat = new THREE.MeshPhysicalMaterial({color: "#000000"});
+        mesh = new THREE.Mesh(marker_geom, mat);
+        mesh.scale.x = 0.06239917835898738;
+        mesh.scale.y = 0.04946449030085299;
+        mesh.scale.z = 0.050672406634235514;
+        mesh.setRotationFromMatrix(m);
+        mesh.position.x = -0.30522444738899807;
+        mesh.position.y = 0.3297293861300188;
+        mesh.position.z = -0.38318516843377876;
+        scene.add(mesh);
+
+        mat = new THREE.MeshPhysicalMaterial({color: "#000000"});
+        mesh = new THREE.Mesh(marker_geom, mat);
+        mesh.scale.x = 0.06239917835898738;
+        mesh.scale.y = 0.050672406634235514;
+        mesh.scale.z = 0.04946449030085299;
+        m = new THREE.Matrix4();
+        m.set(-0.6657821734232129, 0.2512565472152896, 0.7025697438925991, 0, 
+              0.3238451829562796, -0.7509810781309546, 0.5754578331774484, 0,
+              0.6722041319628109, 0.6106533941367389, 0.41862159189583564, 0,
+              0,            0,            0,            1);
+        mesh.setRotationFromMatrix(m);    
+        mesh.position.x = -0.30522444738899807;
+        mesh.position.y = 0.3297293861300188;
+        mesh.position.z = -0.38318516843377876;
+        scene.add(mesh);
+
+        mat = new THREE.MeshPhysicalMaterial({color: "#000000"});
+        mesh = new THREE.Mesh(marker_geom, mat);
+        mesh.scale.x = 0.04946449030085299;
+        mesh.scale.y = 0.06239917835898738;
+        mesh.scale.z = 0.050672406634235514;
+        m = new THREE.Matrix4();
+        m.set(-0.7025697438925991, -0.6657821734232129, -0.2512565472152896, 0, 
+              -0.5754578331774484, 0.3238451829562796, 0.7509810781309546, 0,
+              -0.41862159189583564, 0.6722041319628109, -0.6106533941367389, 0,
+              0,            0,            0,            1);
+        mesh.setRotationFromMatrix(m);   
+        mesh.position.x = -0.30522444738899807;
+        mesh.position.y = 0.3297293861300188;
+        mesh.position.z = -0.38318516843377876;
+        scene.add(mesh);
+        
+    //O002
+        mat = new THREE.MeshPhysicalMaterial({color:"#ff0d0d"});
+        mesh = new THREE.Mesh(sphere_geom, mat);
+        mesh.scale.x = 0.07021289358661843;
+        mesh.scale.y = 0.04391559840549755;
+        mesh.scale.z = 0.05488145990114746;
+        m = new THREE.Matrix4();
+        m.set(0.7228652038851128, -0.529749259692094, -0.44365709604131515, 0, 
+              -0.49351597692164817, -0.8452040323184621, 0.2051149050549066, 0,
+              -0.48364023564546993, 0.07068143750866084, -0.8724083085668681, 0,
+              0,            0,            0,            1);
+        mesh.setRotationFromMatrix(m);
+        mesh.position.x = 0.42098914977468815;
+        mesh.position.y = 0.9019931648949173;
+        mesh.position.z = -0.6455720542833088;
+        scene.add(mesh);
+
+        mat = new THREE.MeshPhysicalMaterial({color: "#ffffff"});
+        mesh = new THREE.Mesh(marker_geom, mat);
+        mesh.scale.x = 0.07821289358661843;
+        mesh.scale.y = 0.05191559840549755;
+        mesh.scale.z = 0.06288145990114746;
+        mesh.setRotationFromMatrix(m);
+        mesh.position.x = 0.42098914977468815;
+        mesh.position.y = 0.9019931648949173;
+        mesh.position.z = -0.6455720542833088;
+        scene.add(mesh);
+
+        mat = new THREE.MeshPhysicalMaterial({color: "#ffffff"});
+        mesh = new THREE.Mesh(marker_geom, mat);
+        mesh.scale.x = 0.07821289358661843;
+        mesh.scale.y = 0.06288145990114746;
+        mesh.scale.z = 0.05191559840549755;
+        m = new THREE.Matrix4();
+        m.set(0.7228652038851128, 0.44365709604131515, -0.529749259692094, 0, 
+              -0.49351597692164817, -0.2051149050549066, -0.8452040323184621, 0,
+              -0.48364023564546993, 0.8724083085668681, 0.07068143750866084, 0,
+              0,            0,            0,            1);
+        mesh.setRotationFromMatrix(m);    
+        mesh.position.x = 0.42098914977468815;
+        mesh.position.y = 0.9019931648949173;
+        mesh.position.z = -0.6455720542833088;
+        scene.add(mesh);
+
+        mat = new THREE.MeshPhysicalMaterial({color: "#ffffff"});
+        mesh = new THREE.Mesh(marker_geom, mat);
+        mesh.scale.x = 0.05191559840549755;
+        mesh.scale.y = 0.07821289358661843;
+        mesh.scale.z = 0.06288145990114746;
+        m = new THREE.Matrix4();
+        m.set(0.529749259692094, 0.7228652038851128, -0.44365709604131515, 0, 
+              0.8452040323184621, -0.49351597692164817, 0.2051149050549066, 0,
+              -0.07068143750866084, -0.48364023564546993, -0.8724083085668681, 0,
+              0,            0,            0,            1);
+        mesh.setRotationFromMatrix(m);   
+        mesh.position.x = 0.42098914977468815;
+        mesh.position.y = 0.9019931648949173;
+        mesh.position.z = -0.6455720542833088;
+        scene.add(mesh);
+        
+    //O003
+        mat = new THREE.MeshPhysicalMaterial({color:"#ff0d0d"});
+        mesh = new THREE.Mesh(sphere_geom, mat);
+        mesh.scale.x = 0.04397741757296515;
+        mesh.scale.y = 0.05554246549075985;
+        mesh.scale.z = 0.06625733718480395;
+        m = new THREE.Matrix4();
+        m.set(-0.6932476868125776, -0.6800572353210522, 0.23859966767893395, 0, 
+              -0.6497813969306404, 0.4465728247172522, -0.615107184502766, 0,
+              0.3117559637470881, -0.581459258169944, -0.7514741180882962, 0,
+              0,            0,            0,            1);
+        mesh.setRotationFromMatrix(m);
+        mesh.position.x = -0.5798210604305645;
+        mesh.position.y = 0.8883689650221781;
+        mesh.position.z = 0.3656836171295428;
+        scene.add(mesh);
+
+        mat = new THREE.MeshPhysicalMaterial({color: "#ffffff"});
+        mesh = new THREE.Mesh(marker_geom, mat);
+        mesh.scale.x = 0.05197741757296515;
+        mesh.scale.y = 0.06354246549075984;
+        mesh.scale.z = 0.07425733718480396;
+        mesh.setRotationFromMatrix(m);
+        mesh.position.x = -0.5798210604305645;
+        mesh.position.y = 0.8883689650221781;
+        mesh.position.z = 0.3656836171295428;
+        scene.add(mesh);
+
+        mat = new THREE.MeshPhysicalMaterial({color: "#ffffff"});
+        mesh = new THREE.Mesh(marker_geom, mat);
+        mesh.scale.x = 0.05197741757296515;
+        mesh.scale.y = 0.07425733718480396;
+        mesh.scale.z = 0.06354246549075984;
+        m = new THREE.Matrix4();
+        m.set(-0.6932476868125776, -0.23859966767893395, -0.6800572353210522, 0, 
+              -0.6497813969306404, 0.615107184502766, 0.4465728247172522, 0,
+              0.3117559637470881, 0.7514741180882962, -0.581459258169944, 0,
+              0,            0,            0,            1);
+        mesh.setRotationFromMatrix(m);    
+        mesh.position.x = -0.5798210604305645;
+        mesh.position.y = 0.8883689650221781;
+        mesh.position.z = 0.3656836171295428;
+        scene.add(mesh);
+
+        mat = new THREE.MeshPhysicalMaterial({color: "#ffffff"});
+        mesh = new THREE.Mesh(marker_geom, mat);
+        mesh.scale.x = 0.06354246549075984;
+        mesh.scale.y = 0.05197741757296515;
+        mesh.scale.z = 0.07425733718480396;
+        m = new THREE.Matrix4();
+        m.set(0.6800572353210522, -0.6932476868125776, 0.23859966767893395, 0, 
+              -0.4465728247172522, -0.6497813969306404, -0.615107184502766, 0,
+              0.581459258169944, 0.3117559637470881, -0.7514741180882962, 0,
+              0,            0,            0,            1);
+        mesh.setRotationFromMatrix(m);   
+        mesh.position.x = -0.5798210604305645;
+        mesh.position.y = 0.8883689650221781;
+        mesh.position.z = 0.3656836171295428;
+        scene.add(mesh);
+        
+    //C004
+        mat = new THREE.MeshPhysicalMaterial({color:"#000000"});
+        mesh = new THREE.Mesh(sphere_geom, mat);
+        mesh.scale.x = 0.05219155865060135;
+        mesh.scale.y = 0.0457401226814258;
+        mesh.scale.z = 0.043617650930660605;
+        m = new THREE.Matrix4();
+        m.set(-0.9428237333018082, 0.32282468458111113, 0.08287117078904535, 0, 
+              0.15849177101923947, 0.21553310115347382, 0.9635485669266245, 0,
+              0.2931957817602871, 0.9215908557121607, -0.25437477906762074, 0,
+              0,            0,            0,            1);
+        mesh.setRotationFromMatrix(m);
+        mesh.position.x = 0.22146570617338734;
+        mesh.position.y = 0.9710213456450971;
+        mesh.position.z = -0.34272054584147155;
+        scene.add(mesh);
+
+        mat = new THREE.MeshPhysicalMaterial({color: "#ffffff"});
+        mesh = new THREE.Mesh(marker_geom, mat);
+        mesh.scale.x = 0.06019155865060135;
+        mesh.scale.y = 0.0537401226814258;
+        mesh.scale.z = 0.051617650930660605;
+        mesh.setRotationFromMatrix(m);
+        mesh.position.x = 0.22146570617338734;
+        mesh.position.y = 0.9710213456450971;
+        mesh.position.z = -0.34272054584147155;
+        scene.add(mesh);
+
+        mat = new THREE.MeshPhysicalMaterial({color: "#ffffff"});
+        mesh = new THREE.Mesh(marker_geom, mat);
+        mesh.scale.x = 0.06019155865060135;
+        mesh.scale.y = 0.051617650930660605;
+        mesh.scale.z = 0.0537401226814258;
+        m = new THREE.Matrix4();
+        m.set(-0.9428237333018082, -0.08287117078904535, 0.32282468458111113, 0, 
+              0.15849177101923947, -0.9635485669266245, 0.21553310115347382, 0,
+              0.2931957817602871, 0.25437477906762074, 0.9215908557121607, 0,
+              0,            0,            0,            1);
+        mesh.setRotationFromMatrix(m);    
+        mesh.position.x = 0.22146570617338734;
+        mesh.position.y = 0.9710213456450971;
+        mesh.position.z = -0.34272054584147155;
+        scene.add(mesh);
+
+        mat = new THREE.MeshPhysicalMaterial({color: "#ffffff"});
+        mesh = new THREE.Mesh(marker_geom, mat);
+        mesh.scale.x = 0.0537401226814258;
+        mesh.scale.y = 0.06019155865060135;
+        mesh.scale.z = 0.051617650930660605;
+        m = new THREE.Matrix4();
+        m.set(-0.32282468458111113, -0.9428237333018082, 0.08287117078904535, 0, 
+              -0.21553310115347382, 0.15849177101923947, 0.9635485669266245, 0,
+              -0.9215908557121607, 0.2931957817602871, -0.25437477906762074, 0,
+              0,            0,            0,            1);
+        mesh.setRotationFromMatrix(m);   
+        mesh.position.x = 0.22146570617338734;
+        mesh.position.y = 0.9710213456450971;
+        mesh.position.z = -0.34272054584147155;
+        scene.add(mesh);
+        
+    //C005
+        mat = new THREE.MeshPhysicalMaterial({color:"#000000"});
+        mesh = new THREE.Mesh(sphere_geom, mat);
+        mesh.scale.x = 0.07512328285473097;
+        mesh.scale.y = 0.04496114448561134;
+        mesh.scale.z = 0.057581955330399004;
+        m = new THREE.Matrix4();
+        m.set(0.7842402559194603, 0.5753513733425011, 0.23224559885663598, 0, 
+              0.3450661236952707, -0.09336053684464667, -0.9339235410021525, 0,
+              -0.5156516181234182, 0.8125605253474827, -0.271751359469871, 0,
+              0,            0,            0,            1);
+        mesh.setRotationFromMatrix(m);
+        mesh.position.x = 0.3176316995809921;
+        mesh.position.y = 1.8643558669722957;
+        mesh.position.z = 0.5597321318766758;
+        scene.add(mesh);
+
+        mat = new THREE.MeshPhysicalMaterial({color: "#ffffff"});
+        mesh = new THREE.Mesh(marker_geom, mat);
+        mesh.scale.x = 0.08312328285473097;
+        mesh.scale.y = 0.05296114448561134;
+        mesh.scale.z = 0.06558195533039901;
+        mesh.setRotationFromMatrix(m);
+        mesh.position.x = 0.3176316995809921;
+        mesh.position.y = 1.8643558669722957;
+        mesh.position.z = 0.5597321318766758;
+        scene.add(mesh);
+
+        mat = new THREE.MeshPhysicalMaterial({color: "#ffffff"});
+        mesh = new THREE.Mesh(marker_geom, mat);
+        mesh.scale.x = 0.08312328285473097;
+        mesh.scale.y = 0.06558195533039901;
+        mesh.scale.z = 0.05296114448561134;
+        m = new THREE.Matrix4();
+        m.set(0.7842402559194603, -0.23224559885663598, 0.5753513733425011, 0, 
+              0.3450661236952707, 0.9339235410021525, -0.09336053684464667, 0,
+              -0.5156516181234182, 0.271751359469871, 0.8125605253474827, 0,
+              0,            0,            0,            1);
+        mesh.setRotationFromMatrix(m);    
+        mesh.position.x = 0.3176316995809921;
+        mesh.position.y = 1.8643558669722957;
+        mesh.position.z = 0.5597321318766758;
+        scene.add(mesh);
+
+        mat = new THREE.MeshPhysicalMaterial({color: "#ffffff"});
+        mesh = new THREE.Mesh(marker_geom, mat);
+        mesh.scale.x = 0.05296114448561134;
+        mesh.scale.y = 0.08312328285473097;
+        mesh.scale.z = 0.06558195533039901;
+        m = new THREE.Matrix4();
+        m.set(-0.5753513733425011, 0.7842402559194603, 0.23224559885663598, 0, 
+              0.09336053684464667, 0.3450661236952707, -0.9339235410021525, 0,
+              -0.8125605253474827, -0.5156516181234182, -0.271751359469871, 0,
+              0,            0,            0,            1);
+        mesh.setRotationFromMatrix(m);   
+        mesh.position.x = 0.3176316995809921;
+        mesh.position.y = 1.8643558669722957;
+        mesh.position.z = 0.5597321318766758;
+        scene.add(mesh);
+        
+    //C006
+        mat = new THREE.MeshPhysicalMaterial({color:"#000000"});
+        mesh = new THREE.Mesh(sphere_geom, mat);
+        mesh.scale.x = 0.04467629564131049;
+        mesh.scale.y = 0.04622464283223654;
+        mesh.scale.z = 0.048563284617109494;
+        m = new THREE.Matrix4();
+        m.set(0.8923455814434856, -0.4513513707694786, 0.001141657917496271, 0, 
+              -0.3368325188734274, -0.6676151593786094, -0.6639532010595746, 0,
+              0.30043837555756714, 0.5920911577387277, -0.7477732566894479, 0,
+              0,            0,            0,            1);
+        mesh.setRotationFromMatrix(m);
+        mesh.position.x = -0.2822919017824817;
+        mesh.position.y = 0.9700244138011263;
+        mesh.position.z = 0.1600401302704264;
+        scene.add(mesh);
+
+        mat = new THREE.MeshPhysicalMaterial({color: "#ffffff"});
+        mesh = new THREE.Mesh(marker_geom, mat);
+        mesh.scale.x = 0.05267629564131049;
+        mesh.scale.y = 0.05422464283223654;
+        mesh.scale.z = 0.056563284617109494;
+        mesh.setRotationFromMatrix(m);
+        mesh.position.x = -0.2822919017824817;
+        mesh.position.y = 0.9700244138011263;
+        mesh.position.z = 0.1600401302704264;
+        scene.add(mesh);
+
+        mat = new THREE.MeshPhysicalMaterial({color: "#ffffff"});
+        mesh = new THREE.Mesh(marker_geom, mat);
+        mesh.scale.x = 0.05267629564131049;
+        mesh.scale.y = 0.056563284617109494;
+        mesh.scale.z = 0.05422464283223654;
+        m = new THREE.Matrix4();
+        m.set(0.8923455814434856, -0.001141657917496271, -0.4513513707694786, 0, 
+              -0.3368325188734274, 0.6639532010595746, -0.6676151593786094, 0,
+              0.30043837555756714, 0.7477732566894479, 0.5920911577387277, 0,
+              0,            0,            0,            1);
+        mesh.setRotationFromMatrix(m);    
+        mesh.position.x = -0.2822919017824817;
+        mesh.position.y = 0.9700244138011263;
+        mesh.position.z = 0.1600401302704264;
+        scene.add(mesh);
+
+        mat = new THREE.MeshPhysicalMaterial({color: "#ffffff"});
+        mesh = new THREE.Mesh(marker_geom, mat);
+        mesh.scale.x = 0.05422464283223654;
+        mesh.scale.y = 0.05267629564131049;
+        mesh.scale.z = 0.056563284617109494;
+        m = new THREE.Matrix4();
+        m.set(0.4513513707694786, 0.8923455814434856, 0.001141657917496271, 0, 
+              0.6676151593786094, -0.3368325188734274, -0.6639532010595746, 0,
+              -0.5920911577387277, 0.30043837555756714, -0.7477732566894479, 0,
+              0,            0,            0,            1);
+        mesh.setRotationFromMatrix(m);   
+        mesh.position.x = -0.2822919017824817;
+        mesh.position.y = 0.9700244138011263;
+        mesh.position.z = 0.1600401302704264;
+        scene.add(mesh);
+        
+    //C007
+        mat = new THREE.MeshPhysicalMaterial({color:"#000000"});
+        mesh = new THREE.Mesh(sphere_geom, mat);
+        mesh.scale.x = 0.04562063606769709;
+        mesh.scale.y = 0.0625300279344274;
+        mesh.scale.z = 0.056612532369595216;
+        m = new THREE.Matrix4();
+        m.set(-0.738373461968759, 0.60515705461771, 0.2976400005151979, 0, 
+              0.019670987864071777, 0.46048402458936505, -0.8874500072310735, 0,
+              -0.6741050978124412, -0.6494146613254113, -0.35191322049459883, 0,
+              0,            0,            0,            1);
+        mesh.setRotationFromMatrix(m);
+        mesh.position.x = 0.004123863563042706;
+        mesh.position.y = 1.584812204824513;
+        mesh.position.z = 0.5499217667832895;
+        scene.add(mesh);
+
+        mat = new THREE.MeshPhysicalMaterial({color: "#ffffff"});
+        mesh = new THREE.Mesh(marker_geom, mat);
+        mesh.scale.x = 0.05362063606769709;
+        mesh.scale.y = 0.07053002793442739;
+        mesh.scale.z = 0.06461253236959522;
+        mesh.setRotationFromMatrix(m);
+        mesh.position.x = 0.004123863563042706;
+        mesh.position.y = 1.584812204824513;
+        mesh.position.z = 0.5499217667832895;
+        scene.add(mesh);
+
+        mat = new THREE.MeshPhysicalMaterial({color: "#ffffff"});
+        mesh = new THREE.Mesh(marker_geom, mat);
+        mesh.scale.x = 0.05362063606769709;
+        mesh.scale.y = 0.06461253236959522;
+        mesh.scale.z = 0.07053002793442739;
+        m = new THREE.Matrix4();
+        m.set(-0.738373461968759, -0.2976400005151979, 0.60515705461771, 0, 
+              0.019670987864071777, 0.8874500072310735, 0.46048402458936505, 0,
+              -0.6741050978124412, 0.35191322049459883, -0.6494146613254113, 0,
+              0,            0,            0,            1);
+        mesh.setRotationFromMatrix(m);    
+        mesh.position.x = 0.004123863563042706;
+        mesh.position.y = 1.584812204824513;
+        mesh.position.z = 0.5499217667832895;
+        scene.add(mesh);
+
+        mat = new THREE.MeshPhysicalMaterial({color: "#ffffff"});
+        mesh = new THREE.Mesh(marker_geom, mat);
+        mesh.scale.x = 0.07053002793442739;
+        mesh.scale.y = 0.05362063606769709;
+        mesh.scale.z = 0.06461253236959522;
+        m = new THREE.Matrix4();
+        m.set(-0.60515705461771, -0.738373461968759, 0.2976400005151979, 0, 
+              -0.46048402458936505, 0.019670987864071777, -0.8874500072310735, 0,
+              0.6494146613254113, -0.6741050978124412, -0.35191322049459883, 0,
+              0,            0,            0,            1);
+        mesh.setRotationFromMatrix(m);   
+        mesh.position.x = 0.004123863563042706;
+        mesh.position.y = 1.584812204824513;
+        mesh.position.z = 0.5499217667832895;
+        scene.add(mesh);
+        
+    //C008
+        mat = new THREE.MeshPhysicalMaterial({color:"#000000"});
+        mesh = new THREE.Mesh(sphere_geom, mat);
+        mesh.scale.x = 0.05295752941183943;
+        mesh.scale.y = 0.043641553785699554;
+        mesh.scale.z = 0.04751984355786596;
+        m = new THREE.Matrix4();
+        m.set(0.7377137308941851, 0.6593759218240128, 0.14492013306961712, 0, 
+              0.47183342567649217, -0.3500350460901369, -0.8092272146455911, 0,
+              -0.4828578151636029, 0.6653561904930388, -0.5693412597976917, 0,
+              0,            0,            0,            1);
+        mesh.setRotationFromMatrix(m);
+        mesh.position.x = 0.00349345226928216;
+        mesh.position.y = 1.3083162920907945;
+        mesh.position.z = 0.24115995069174678;
+        scene.add(mesh);
+
+        mat = new THREE.MeshPhysicalMaterial({color: "#ffffff"});
+        mesh = new THREE.Mesh(marker_geom, mat);
+        mesh.scale.x = 0.06095752941183943;
+        mesh.scale.y = 0.051641553785699554;
+        mesh.scale.z = 0.05551984355786596;
+        mesh.setRotationFromMatrix(m);
+        mesh.position.x = 0.00349345226928216;
+        mesh.position.y = 1.3083162920907945;
+        mesh.position.z = 0.24115995069174678;
+        scene.add(mesh);
+
+        mat = new THREE.MeshPhysicalMaterial({color: "#ffffff"});
+        mesh = new THREE.Mesh(marker_geom, mat);
+        mesh.scale.x = 0.06095752941183943;
+        mesh.scale.y = 0.05551984355786596;
+        mesh.scale.z = 0.051641553785699554;
+        m = new THREE.Matrix4();
+        m.set(0.7377137308941851, -0.14492013306961712, 0.6593759218240128, 0, 
+              0.47183342567649217, 0.8092272146455911, -0.3500350460901369, 0,
+              -0.4828578151636029, 0.5693412597976917, 0.6653561904930388, 0,
+              0,            0,            0,            1);
+        mesh.setRotationFromMatrix(m);    
+        mesh.position.x = 0.00349345226928216;
+        mesh.position.y = 1.3083162920907945;
+        mesh.position.z = 0.24115995069174678;
+        scene.add(mesh);
+
+        mat = new THREE.MeshPhysicalMaterial({color: "#ffffff"});
+        mesh = new THREE.Mesh(marker_geom, mat);
+        mesh.scale.x = 0.051641553785699554;
+        mesh.scale.y = 0.06095752941183943;
+        mesh.scale.z = 0.05551984355786596;
+        m = new THREE.Matrix4();
+        m.set(-0.6593759218240128, 0.7377137308941851, 0.14492013306961712, 0, 
+              0.3500350460901369, 0.47183342567649217, -0.8092272146455911, 0,
+              -0.6653561904930388, -0.4828578151636029, -0.5693412597976917, 0,
+              0,            0,            0,            1);
+        mesh.setRotationFromMatrix(m);   
+        mesh.position.x = 0.00349345226928216;
+        mesh.position.y = 1.3083162920907945;
+        mesh.position.z = 0.24115995069174678;
+        scene.add(mesh);
+        
+    //C009
+        mat = new THREE.MeshPhysicalMaterial({color:"#000000"});
+        mesh = new THREE.Mesh(sphere_geom, mat);
+        mesh.scale.x = 0.07131152546424285;
+        mesh.scale.y = 0.04384134400137062;
+        mesh.scale.z = 0.05247336107127241;
+        m = new THREE.Matrix4();
+        m.set(-0.9680521869534111, 0.1894811564498362, 0.1642311014550864, 0, 
+              0.04208935712225784, -0.5228809089442216, 0.851365985389773, 0,
+              0.2471911190794547, 0.8310790855340406, 0.4982008673578858, 0,
+              0,            0,            0,            1);
+        mesh.setRotationFromMatrix(m);
+        mesh.position.x = 0.6147743910089715;
+        mesh.position.y = 1.579119716727903;
+        mesh.position.z = -0.04261108413572629;
+        scene.add(mesh);
+
+        mat = new THREE.MeshPhysicalMaterial({color: "#ffffff"});
+        mesh = new THREE.Mesh(marker_geom, mat);
+        mesh.scale.x = 0.07931152546424286;
+        mesh.scale.y = 0.05184134400137062;
+        mesh.scale.z = 0.06047336107127241;
+        mesh.setRotationFromMatrix(m);
+        mesh.position.x = 0.6147743910089715;
+        mesh.position.y = 1.579119716727903;
+        mesh.position.z = -0.04261108413572629;
+        scene.add(mesh);
+
+        mat = new THREE.MeshPhysicalMaterial({color: "#ffffff"});
+        mesh = new THREE.Mesh(marker_geom, mat);
+        mesh.scale.x = 0.07931152546424286;
+        mesh.scale.y = 0.06047336107127241;
+        mesh.scale.z = 0.05184134400137062;
+        m = new THREE.Matrix4();
+        m.set(-0.9680521869534111, -0.1642311014550864, 0.1894811564498362, 0, 
+              0.04208935712225784, -0.851365985389773, -0.5228809089442216, 0,
+              0.2471911190794547, -0.4982008673578858, 0.8310790855340406, 0,
+              0,            0,            0,            1);
+        mesh.setRotationFromMatrix(m);    
+        mesh.position.x = 0.6147743910089715;
+        mesh.position.y = 1.579119716727903;
+        mesh.position.z = -0.04261108413572629;
+        scene.add(mesh);
+
+        mat = new THREE.MeshPhysicalMaterial({color: "#ffffff"});
+        mesh = new THREE.Mesh(marker_geom, mat);
+        mesh.scale.x = 0.05184134400137062;
+        mesh.scale.y = 0.07931152546424286;
+        mesh.scale.z = 0.06047336107127241;
+        m = new THREE.Matrix4();
+        m.set(-0.1894811564498362, -0.9680521869534111, 0.1642311014550864, 0, 
+              0.5228809089442216, 0.04208935712225784, 0.851365985389773, 0,
+              -0.8310790855340406, 0.2471911190794547, 0.4982008673578858, 0,
+              0,            0,            0,            1);
+        mesh.setRotationFromMatrix(m);   
+        mesh.position.x = 0.6147743910089715;
+        mesh.position.y = 1.579119716727903;
+        mesh.position.z = -0.04261108413572629;
+        scene.add(mesh);
+        
+    //C00A
+        mat = new THREE.MeshPhysicalMaterial({color:"#000000"});
+        mesh = new THREE.Mesh(sphere_geom, mat);
+        mesh.scale.x = 0.05622886686342813;
+        mesh.scale.y = 0.04317354009477046;
+        mesh.scale.z = 0.045706206766041334;
+        m = new THREE.Matrix4();
+        m.set(-0.9570596440831721, -0.28882081737311827, -0.024887207945365655, 0, 
+              -0.1096318339746266, 0.44008145420830447, -0.8912402451871572, 0,
+              0.2683611347545541, -0.8502416416018612, -0.45284815583087, 0,
+              0,            0,            0,            1);
+        mesh.setRotationFromMatrix(m);
+        mesh.position.x = 0.30234271010784874;
+        mesh.position.y = 1.3062034691174012;
+        mesh.position.z = -0.05133037898053922;
+        scene.add(mesh);
+
+        mat = new THREE.MeshPhysicalMaterial({color: "#ffffff"});
+        mesh = new THREE.Mesh(marker_geom, mat);
+        mesh.scale.x = 0.06422886686342813;
+        mesh.scale.y = 0.05117354009477046;
+        mesh.scale.z = 0.053706206766041334;
+        mesh.setRotationFromMatrix(m);
+        mesh.position.x = 0.30234271010784874;
+        mesh.position.y = 1.3062034691174012;
+        mesh.position.z = -0.05133037898053922;
+        scene.add(mesh);
+
+        mat = new THREE.MeshPhysicalMaterial({color: "#ffffff"});
+        mesh = new THREE.Mesh(marker_geom, mat);
+        mesh.scale.x = 0.06422886686342813;
+        mesh.scale.y = 0.053706206766041334;
+        mesh.scale.z = 0.05117354009477046;
+        m = new THREE.Matrix4();
+        m.set(-0.9570596440831721, 0.024887207945365655, -0.28882081737311827, 0, 
+              -0.1096318339746266, 0.8912402451871572, 0.44008145420830447, 0,
+              0.2683611347545541, 0.45284815583087, -0.8502416416018612, 0,
+              0,            0,            0,            1);
+        mesh.setRotationFromMatrix(m);    
+        mesh.position.x = 0.30234271010784874;
+        mesh.position.y = 1.3062034691174012;
+        mesh.position.z = -0.05133037898053922;
+        scene.add(mesh);
+
+        mat = new THREE.MeshPhysicalMaterial({color: "#ffffff"});
+        mesh = new THREE.Mesh(marker_geom, mat);
+        mesh.scale.x = 0.05117354009477046;
+        mesh.scale.y = 0.06422886686342813;
+        mesh.scale.z = 0.053706206766041334;
+        m = new THREE.Matrix4();
+        m.set(0.28882081737311827, -0.9570596440831721, -0.024887207945365655, 0, 
+              -0.44008145420830447, -0.1096318339746266, -0.8912402451871572, 0,
+              0.8502416416018612, 0.2683611347545541, -0.45284815583087, 0,
+              0,            0,            0,            1);
+        mesh.setRotationFromMatrix(m);   
+        mesh.position.x = 0.30234271010784874;
+        mesh.position.y = 1.3062034691174012;
+        mesh.position.z = -0.05133037898053922;
+        scene.add(mesh);
+        
+    //C00B
+        mat = new THREE.MeshPhysicalMaterial({color:"#000000"});
+        mesh = new THREE.Mesh(sphere_geom, mat);
+        mesh.scale.x = 0.07794780384239214;
+        mesh.scale.y = 0.05889429007942103;
+        mesh.scale.z = 0.047495739621454106;
+        m = new THREE.Matrix4();
+        m.set(-0.9726862538876969, -0.20326405112068976, 0.11209450039999162, 0, 
+              -0.19526609457180003, 0.977616388608623, 0.07834123457356547, 0,
+              -0.12550937737314688, 0.05431318666621544, -0.9906046002041206, 0,
+              0,            0,            0,            1);
+        mesh.setRotationFromMatrix(m);
+        mesh.position.x = -0.8146311565910446;
+        mesh.position.y = 0.4166307784227089;
+        mesh.position.z = -0.5346200486175607;
+        scene.add(mesh);
+
+        mat = new THREE.MeshPhysicalMaterial({color: "#ffffff"});
+        mesh = new THREE.Mesh(marker_geom, mat);
+        mesh.scale.x = 0.08594780384239215;
+        mesh.scale.y = 0.06689429007942102;
+        mesh.scale.z = 0.055495739621454106;
+        mesh.setRotationFromMatrix(m);
+        mesh.position.x = -0.8146311565910446;
+        mesh.position.y = 0.4166307784227089;
+        mesh.position.z = -0.5346200486175607;
+        scene.add(mesh);
+
+        mat = new THREE.MeshPhysicalMaterial({color: "#ffffff"});
+        mesh = new THREE.Mesh(marker_geom, mat);
+        mesh.scale.x = 0.08594780384239215;
+        mesh.scale.y = 0.055495739621454106;
+        mesh.scale.z = 0.06689429007942102;
+        m = new THREE.Matrix4();
+        m.set(-0.9726862538876969, -0.11209450039999162, -0.20326405112068976, 0, 
+              -0.19526609457180003, -0.07834123457356547, 0.977616388608623, 0,
+              -0.12550937737314688, 0.9906046002041206, 0.05431318666621544, 0,
+              0,            0,            0,            1);
+        mesh.setRotationFromMatrix(m);    
+        mesh.position.x = -0.8146311565910446;
+        mesh.position.y = 0.4166307784227089;
+        mesh.position.z = -0.5346200486175607;
+        scene.add(mesh);
+
+        mat = new THREE.MeshPhysicalMaterial({color: "#ffffff"});
+        mesh = new THREE.Mesh(marker_geom, mat);
+        mesh.scale.x = 0.06689429007942102;
+        mesh.scale.y = 0.08594780384239215;
+        mesh.scale.z = 0.055495739621454106;
+        m = new THREE.Matrix4();
+        m.set(0.20326405112068976, -0.9726862538876969, 0.11209450039999162, 0, 
+              -0.977616388608623, -0.19526609457180003, 0.07834123457356547, 0,
+              -0.05431318666621544, -0.12550937737314688, -0.9906046002041206, 0,
+              0,            0,            0,            1);
+        mesh.setRotationFromMatrix(m);   
+        mesh.position.x = -0.8146311565910446;
+        mesh.position.y = 0.4166307784227089;
+        mesh.position.z = -0.5346200486175607;
+        scene.add(mesh);
+        
+    //C00C
+        mat = new THREE.MeshPhysicalMaterial({color:"#000000"});
+        mesh = new THREE.Mesh(sphere_geom, mat);
+        mesh.scale.x = 0.053539595239856415;
+        mesh.scale.y = 0.04551128612461827;
+        mesh.scale.z = 0.04174840220697642;
+        m = new THREE.Matrix4();
+        m.set(0.6093134857813424, -0.7329366960984244, -0.30255722691305253, 0, 
+              -0.5169916028751633, -0.656528191571665, 0.5492635216616957, 0,
+              -0.6012127398862728, -0.17825412529297974, -0.778953598242203, 0,
+              0,            0,            0,            1);
+        mesh.setRotationFromMatrix(m);
+        mesh.position.x = -0.13060616062962735;
+        mesh.position.y = 0.7713965449111061;
+        mesh.position.z = -0.19027347977244782;
+        scene.add(mesh);
+
+        mat = new THREE.MeshPhysicalMaterial({color: "#ffffff"});
+        mesh = new THREE.Mesh(marker_geom, mat);
+        mesh.scale.x = 0.061539595239856415;
+        mesh.scale.y = 0.05351128612461827;
+        mesh.scale.z = 0.04974840220697642;
+        mesh.setRotationFromMatrix(m);
+        mesh.position.x = -0.13060616062962735;
+        mesh.position.y = 0.7713965449111061;
+        mesh.position.z = -0.19027347977244782;
+        scene.add(mesh);
+
+        mat = new THREE.MeshPhysicalMaterial({color: "#ffffff"});
+        mesh = new THREE.Mesh(marker_geom, mat);
+        mesh.scale.x = 0.061539595239856415;
+        mesh.scale.y = 0.04974840220697642;
+        mesh.scale.z = 0.05351128612461827;
+        m = new THREE.Matrix4();
+        m.set(0.6093134857813424, 0.30255722691305253, -0.7329366960984244, 0, 
+              -0.5169916028751633, -0.5492635216616957, -0.656528191571665, 0,
+              -0.6012127398862728, 0.778953598242203, -0.17825412529297974, 0,
+              0,            0,            0,            1);
+        mesh.setRotationFromMatrix(m);    
+        mesh.position.x = -0.13060616062962735;
+        mesh.position.y = 0.7713965449111061;
+        mesh.position.z = -0.19027347977244782;
+        scene.add(mesh);
+
+        mat = new THREE.MeshPhysicalMaterial({color: "#ffffff"});
+        mesh = new THREE.Mesh(marker_geom, mat);
+        mesh.scale.x = 0.05351128612461827;
+        mesh.scale.y = 0.061539595239856415;
+        mesh.scale.z = 0.04974840220697642;
+        m = new THREE.Matrix4();
+        m.set(0.7329366960984244, 0.6093134857813424, -0.30255722691305253, 0, 
+              0.656528191571665, -0.5169916028751633, 0.5492635216616957, 0,
+              0.17825412529297974, -0.6012127398862728, -0.778953598242203, 0,
+              0,            0,            0,            1);
+        mesh.setRotationFromMatrix(m);   
+        mesh.position.x = -0.13060616062962735;
+        mesh.position.y = 0.7713965449111061;
+        mesh.position.z = -0.19027347977244782;
+        scene.add(mesh);
+        
+    //C00D
+        mat = new THREE.MeshPhysicalMaterial({color:"#000000"});
+        mesh = new THREE.Mesh(sphere_geom, mat);
+        mesh.scale.x = 0.0788187825314059;
+        mesh.scale.y = 0.04377534496030024;
+        mesh.scale.z = 0.056135367050315625;
+        m = new THREE.Matrix4();
+        m.set(-0.9339378453925088, -0.35311489860871237, 0.05540730388818355, 0, 
+              -0.18117611919491627, 0.33404585755466887, -0.9249803127007818, 0,
+              0.3081157489922712, -0.8739126005677714, -0.37595405542673305, 0,
+              0,            0,            0,            1);
+        mesh.setRotationFromMatrix(m);
+        mesh.position.x = 0.6181092122008562;
+        mesh.position.y = 1.8612590684710897;
+        mesh.position.z = 0.2707598241953651;
+        scene.add(mesh);
+
+        mat = new THREE.MeshPhysicalMaterial({color: "#ffffff"});
+        mesh = new THREE.Mesh(marker_geom, mat);
+        mesh.scale.x = 0.0868187825314059;
+        mesh.scale.y = 0.05177534496030024;
+        mesh.scale.z = 0.06413536705031563;
+        mesh.setRotationFromMatrix(m);
+        mesh.position.x = 0.6181092122008562;
+        mesh.position.y = 1.8612590684710897;
+        mesh.position.z = 0.2707598241953651;
+        scene.add(mesh);
+
+        mat = new THREE.MeshPhysicalMaterial({color: "#ffffff"});
+        mesh = new THREE.Mesh(marker_geom, mat);
+        mesh.scale.x = 0.0868187825314059;
+        mesh.scale.y = 0.06413536705031563;
+        mesh.scale.z = 0.05177534496030024;
+        m = new THREE.Matrix4();
+        m.set(-0.9339378453925088, -0.05540730388818355, -0.35311489860871237, 0, 
+              -0.18117611919491627, 0.9249803127007818, 0.33404585755466887, 0,
+              0.3081157489922712, 0.37595405542673305, -0.8739126005677714, 0,
+              0,            0,            0,            1);
+        mesh.setRotationFromMatrix(m);    
+        mesh.position.x = 0.6181092122008562;
+        mesh.position.y = 1.8612590684710897;
+        mesh.position.z = 0.2707598241953651;
+        scene.add(mesh);
+
+        mat = new THREE.MeshPhysicalMaterial({color: "#ffffff"});
+        mesh = new THREE.Mesh(marker_geom, mat);
+        mesh.scale.x = 0.05177534496030024;
+        mesh.scale.y = 0.0868187825314059;
+        mesh.scale.z = 0.06413536705031563;
+        m = new THREE.Matrix4();
+        m.set(0.35311489860871237, -0.9339378453925088, 0.05540730388818355, 0, 
+              -0.33404585755466887, -0.18117611919491627, -0.9249803127007818, 0,
+              0.8739126005677714, 0.3081157489922712, -0.37595405542673305, 0,
+              0,            0,            0,            1);
+        mesh.setRotationFromMatrix(m);   
+        mesh.position.x = 0.6181092122008562;
+        mesh.position.y = 1.8612590684710897;
+        mesh.position.z = 0.2707598241953651;
+        scene.add(mesh);
+        
+    //C00E
+        mat = new THREE.MeshPhysicalMaterial({color:"#000000"});
+        mesh = new THREE.Mesh(sphere_geom, mat);
+        mesh.scale.x = 0.06572679758109323;
+        mesh.scale.y = 0.053517287687174134;
+        mesh.scale.z = 0.04419415083856947;
+        m = new THREE.Matrix4();
+        m.set(0.4761041020920793, 0.7743763740072979, 0.41673266652664104, 0, 
+              0.10799744543151876, 0.41881375446947644, -0.9016271906100919, 0,
+              -0.8727321672491286, 0.474274467419964, 0.11576827632019257, 0,
+              0,            0,            0,            1);
+        mesh.setRotationFromMatrix(m);
+        mesh.position.x = -0.3903554578563562;
+        mesh.position.y = 0.015;
+        mesh.position.z = 0.04301533911778897;
+        scene.add(mesh);
+
+        mat = new THREE.MeshPhysicalMaterial({color: "#ffffff"});
+        mesh = new THREE.Mesh(marker_geom, mat);
+        mesh.scale.x = 0.07372679758109324;
+        mesh.scale.y = 0.061517287687174134;
+        mesh.scale.z = 0.05219415083856947;
+        mesh.setRotationFromMatrix(m);
+        mesh.position.x = -0.3903554578563562;
+        mesh.position.y = 0.015;
+        mesh.position.z = 0.04301533911778897;
+        scene.add(mesh);
+
+        mat = new THREE.MeshPhysicalMaterial({color: "#ffffff"});
+        mesh = new THREE.Mesh(marker_geom, mat);
+        mesh.scale.x = 0.07372679758109324;
+        mesh.scale.y = 0.05219415083856947;
+        mesh.scale.z = 0.061517287687174134;
+        m = new THREE.Matrix4();
+        m.set(0.4761041020920793, -0.41673266652664104, 0.7743763740072979, 0, 
+              0.10799744543151876, 0.9016271906100919, 0.41881375446947644, 0,
+              -0.8727321672491286, -0.11576827632019257, 0.474274467419964, 0,
+              0,            0,            0,            1);
+        mesh.setRotationFromMatrix(m);    
+        mesh.position.x = -0.3903554578563562;
+        mesh.position.y = 0.015;
+        mesh.position.z = 0.04301533911778897;
+        scene.add(mesh);
+
+        mat = new THREE.MeshPhysicalMaterial({color: "#ffffff"});
+        mesh = new THREE.Mesh(marker_geom, mat);
+        mesh.scale.x = 0.061517287687174134;
+        mesh.scale.y = 0.07372679758109324;
+        mesh.scale.z = 0.05219415083856947;
+        m = new THREE.Matrix4();
+        m.set(-0.7743763740072979, 0.4761041020920793, 0.41673266652664104, 0, 
+              -0.41881375446947644, 0.10799744543151876, -0.9016271906100919, 0,
+              -0.474274467419964, -0.8727321672491286, 0.11576827632019257, 0,
+              0,            0,            0,            1);
+        mesh.setRotationFromMatrix(m);   
+        mesh.position.x = -0.3903554578563562;
+        mesh.position.y = 0.015;
+        mesh.position.z = 0.04301533911778897;
+        scene.add(mesh);
+        
+    bond_mat = new THREE.MeshPhysicalMaterial({color: "#aaaaaa"})
+    //O002 - C004
+    bond_geom = new THREE.CylinderBufferGeometry(0.012, 0.012, 0.36917953687832855, 6, 1);
+    mesh = new THREE.Mesh(bond_geom, bond_mat);
+    m = new THREE.Matrix4();
+    m.set(0.7539234548285194, -0.5404509829781228, 0.3735132651692712, 0,
+          0.5404509829781228, 0.1869772667625661, -0.8203366605924552, 0,
+          0.3735132651692712, 0.8203366605924552, 0.4330538119340467, 0,
+          0,           0,           0,            1);
+    mesh.setRotationFromMatrix(m);
+    mesh.position.x = 0.32122742797403775;
+    mesh.position.y = 0.9365072552700072;
+    mesh.position.z = -0.49414630006239013;
+    scene.add(mesh);
+    
+    //C007 - C008
+    bond_geom = new THREE.CylinderBufferGeometry(0.012, 0.012, 0.41446863120506366, 6, 1);
+    mesh = new THREE.Mesh(bond_geom, bond_mat);
+    m = new THREE.Matrix4();
+    m.set(0.999993050347622, -0.0015210108710220875, -0.0034037894160162847, 0,
+          0.0015210108710220875, -0.667109382753067, 0.7449582256534606, 0,
+          -0.0034037894160162847, -0.7449582256534606, -0.667102433100689, 0,
+          0,           0,           0,            1);
+    mesh.setRotationFromMatrix(m);
+    mesh.position.x = 0.0038086579161624333;
+    mesh.position.y = 1.4465642484576537;
+    mesh.position.z = 0.39554085873751815;
+    scene.add(mesh);
+    
+    //C005 - C007
+    bond_geom = new THREE.CylinderBufferGeometry(0.012, 0.012, 0.42015243133286356, 6, 1);
+    mesh = new THREE.Mesh(bond_geom, bond_mat);
+    m = new THREE.Matrix4();
+    m.set(-0.6637095630335903, -0.7461764175049469, -0.05206121298283345, 0,
+          0.7461764175049469, -0.6653386754444739, 0.023349537838599523, 0,
+          -0.05206121298283345, -0.023349537838599523, 0.9983708875891163, 0,
+          0,           0,           0,            1);
+    mesh.setRotationFromMatrix(m);
+    mesh.position.x = 0.1608777815720174;
+    mesh.position.y = 1.7245840358984044;
+    mesh.position.z = 0.5548269493299827;
+    scene.add(mesh);
+    
+    //C006 - C00C
+    bond_geom = new THREE.CylinderBufferGeometry(0.012, 0.012, 0.4303268754681175, 6, 1);
+    mesh = new THREE.Mesh(bond_geom, bond_mat);
+    m = new THREE.Matrix4();
+    m.set(0.7692366293269111, 0.35248958361675137, 0.5329409925530797, 0,
+          -0.35248958361675137, -0.4615743989355745, 0.8140639825523251, 0,
+          0.5329409925530797, -0.8140639825523251, -0.23081102826248556, 0,
+          0,           0,           0,            1);
+    mesh.setRotationFromMatrix(m);
+    mesh.position.x = -0.2064490312060545;
+    mesh.position.y = 0.8707104793561162;
+    mesh.position.z = -0.015116674751010709;
+    scene.add(mesh);
+    
+    //C009 - C00D
+    bond_geom = new THREE.CylinderBufferGeometry(0.012, 0.012, 0.4216812315276799, 6, 1);
+    mesh = new THREE.Mesh(bond_geom, bond_mat);
+    m = new THREE.Matrix4();
+    m.set(0.9999625286905383, 0.00790839369303509, -0.0035211537910827444, 0,
+          -0.00790839369303509, 0.6690820711205085, -0.7431464454697249, 0,
+          -0.0035211537910827444, 0.7431464454697249, 0.6691195424299703, 0,
+          0,           0,           0,            1);
+    mesh.setRotationFromMatrix(m);
+    mesh.position.x = 0.6164418016049138;
+    mesh.position.y = 1.7201893925994964;
+    mesh.position.z = 0.1140743700298194;
+    scene.add(mesh);
+    
+    //C006 - C008
+    bond_geom = new THREE.CylinderBufferGeometry(0.012, 0.012, 0.4502167131198385, 6, 1);
+    mesh = new THREE.Mesh(bond_geom, bond_mat);
+    m = new THREE.Matrix4();
+    m.set(0.7699342902529562, 0.6347728676516139, -0.06530386807857, 0,
+          -0.6347728676516139, 0.751397867807768, -0.18017949591251164, 0,
+          -0.06530386807857, 0.18017949591251164, 0.9814635775548117, 0,
+          0,           0,           0,            1);
+    mesh.setRotationFromMatrix(m);
+    mesh.position.x = -0.13939922475659977;
+    mesh.position.y = 1.1391703529459605;
+    mesh.position.z = 0.2006000404810866;
+    scene.add(mesh);
+    
+    //S001 - C00E
+    bond_geom = new THREE.CylinderBufferGeometry(0.012, 0.012, 0.5366085613127933, 6, 1);
+    mesh = new THREE.Mesh(bond_geom, bond_mat);
+    m = new THREE.Matrix4();
+    m.set(0.9391302614274566, -0.158646388829668, 0.3047387001719716, 0,
+          0.158646388829668, -0.586515774850936, -0.7942484303807671, 0,
+          0.3047387001719716, 0.7942484303807671, -0.5256460362783926, 0,
+          0,           0,           0,            1);
+    mesh.setRotationFromMatrix(m);
+    mesh.position.x = -0.34778995262267715;
+    mesh.position.y = 0.1723646930650094;
+    mesh.position.z = -0.17008491465799488;
+    scene.add(mesh);
+    
+    //C004 - C00C
+    bond_geom = new THREE.CylinderBufferGeometry(0.012, 0.012, 0.43248672628798523, 6, 1);
+    mesh = new THREE.Mesh(bond_geom, bond_mat);
+    m = new THREE.Matrix4();
+    m.set(-0.23081102826248556, -0.8140639825523254, 0.5329409925530791, 0,
+          0.8140639825523254, -0.46157439893557406, -0.3524895836167511, 0,
+          0.5329409925530791, 0.3524895836167511, 0.7692366293269115, 0,
+          0,           0,           0,            1);
+    mesh.setRotationFromMatrix(m);
+    mesh.position.x = 0.04542977277188;
+    mesh.position.y = 0.8712089452781016;
+    mesh.position.z = -0.2664970128069597;
+    scene.add(mesh);
+    
+    //C009 - C00A
+    bond_geom = new THREE.CylinderBufferGeometry(0.012, 0.012, 0.41493717541706054, 6, 1);
+    mesh = new THREE.Mesh(bond_geom, bond_mat);
+    m = new THREE.Matrix4();
+    m.set(-0.6564389684833176, -0.7529614105727988, -0.04622764156626838, 0,
+          0.7529614105727988, -0.6577290823271955, 0.02101353014718196, 0,
+          -0.04622764156626838, -0.02101353014718196, 0.998709886156122, 0,
+          0,           0,           0,            1);
+    mesh.setRotationFromMatrix(m);
+    mesh.position.x = 0.4585585505584101;
+    mesh.position.y = 1.442661592922652;
+    mesh.position.z = -0.04697073155813276;
+    scene.add(mesh);
+    
+    //S001 - C00C
+    bond_geom = new THREE.CylinderBufferGeometry(0.012, 0.012, 0.5126171523063798, 6, 1);
+    mesh = new THREE.Mesh(bond_geom, bond_mat);
+    m = new THREE.Matrix4();
+    m.set(0.9376683636592167, 0.3406407412895253, -0.06886163784263104, 0,
+          -0.3406407412895253, 0.8615926267662474, -0.37632702650189886, 0,
+          -0.06886163784263104, 0.37632702650189886, 0.9239242631070307, 0,
+          0,           0,           0,            1);
+    mesh.setRotationFromMatrix(m);
+    mesh.position.x = -0.2179153040093127;
+    mesh.position.y = 0.5505629655205624;
+    mesh.position.z = -0.2867293241031133;
+    scene.add(mesh);
+    
+    //C004 - C00A
+    bond_geom = new THREE.CylinderBufferGeometry(0.012, 0.012, 0.45143811868744504, 6, 1);
+    mesh = new THREE.Mesh(bond_geom, bond_mat);
+    m = new THREE.Matrix4();
+    m.set(0.9815801213906673, 0.1791541311788447, -0.06636461837633112, 0,
+          -0.1791541311788447, 0.7424763430408691, -0.6454708957855583, 0,
+          -0.06636461837633112, 0.6454708957855583, 0.7608962216502018, 0,
+          0,           0,           0,            1);
+    mesh.setRotationFromMatrix(m);
+    mesh.position.x = 0.26190420814061804;
+    mesh.position.y = 1.1386124073812491;
+    mesh.position.z = -0.19702546241100538;
+    scene.add(mesh);
+    
+    //C005 - C00D
+    bond_geom = new THREE.CylinderBufferGeometry(0.012, 0.012, 0.4168948552786899, 6, 1);
+    mesh = new THREE.Mesh(bond_geom, bond_mat);
+    m = new THREE.Matrix4();
+    m.set(0.47662982710627655, 0.7207513089097682, 0.5033304666096585, 0,
+          -0.7207513089097682, -0.007428248302886242, 0.693153930834996, 0,
+          0.5033304666096585, -0.693153930834996, 0.515941924590837, 0,
+          0,           0,           0,            1);
+    mesh.setRotationFromMatrix(m);
+    mesh.position.x = 0.46787045589092413;
+    mesh.position.y = 1.8628074677216926;
+    mesh.position.z = 0.4152459780360205;
+    scene.add(mesh);
+    
+    //S001 - C00B
+    bond_geom = new THREE.CylinderBufferGeometry(0.012, 0.012, 0.5384975118779499, 6, 1);
+    mesh = new THREE.Mesh(bond_geom, bond_mat);
+    m = new THREE.Matrix4();
+    m.set(0.2294718594459938, -0.9459778327026015, -0.22906026664982032, 0,
+          0.9459778327026015, 0.16137751869944805, 0.2812174185460389, 0,
+          -0.22906026664982032, -0.2812174185460389, 0.9319056592534543, 0,
+          0,           0,           0,            1);
+    mesh.setRotationFromMatrix(m);
+    mesh.position.x = -0.5599278019900213;
+    mesh.position.y = 0.37318008227636384;
+    mesh.position.z = -0.4589026085256698;
+    scene.add(mesh);
+    
+    //O003 - C006
+    bond_geom = new THREE.CylinderBufferGeometry(0.012, 0.012, 0.37078357062942124, 6, 1);
+    mesh = new THREE.Mesh(bond_geom, bond_mat);
+    m = new THREE.Matrix4();
+    m.set(0.47231040174350825, 0.8024335008776524, 0.36472367769877573, 0,
+          -0.8024335008776524, 0.22022402082253656, 0.554618659370553, 0,
+          0.36472367769877573, -0.554618659370553, 0.7479136190790284, 0,
+          0,           0,           0,            1);
+    mesh.setRotationFromMatrix(m);
+    mesh.position.x = -0.43105648110652306;
+    mesh.position.y = 0.9291966894116521;
+    mesh.position.z = 0.2628618736999846;
+    scene.add(mesh);
+    
+    //C008 - C00A
+    bond_geom = new THREE.CylinderBufferGeometry(0.012, 0.012, 0.41816974529894135, 6, 1);
+    mesh = new THREE.Mesh(bond_geom, bond_mat);
+    m = new THREE.Matrix4();
+    m.set(0.48666721426159343, 0.7146601618080359, 0.5024100672631594, 0,
+          -0.7146601618080359, -0.005052548629224551, 0.699453590223727, 0,
+          0.5024100672631594, -0.699453590223727, 0.5082802371091821, 0,
+          0,           0,           0,            1);
+    mesh.setRotationFromMatrix(m);
+    mesh.position.x = 0.15291808118856545;
+    mesh.position.y = 1.3072598806040978;
+    mesh.position.z = 0.09491478585560378;
+    scene.add(mesh);
+    
+    var light = new THREE.PointLight(0xFFFFFF, 1, 500);
+    light.position.set(10, 0, 25);
+    scene.add(light);
+    var ambient_light = new THREE.AmbientLight(0xFFFFFF, 1.0);
+    scene.add(ambient_light);
+	//////////////////////////////////////////////////////////////////////////////////
+	//		render the whole thing on the page
+	//////////////////////////////////////////////////////////////////////////////////
+
+	// render the scene
+	onRenderFcts.push(function(){{
+		renderer.render( scene, camera );
+	}})
+
+	// run the rendering loop
+	var lastTimeMsec= null
+	requestAnimationFrame(function animate(nowMsec){{
+		// keep looping
+		requestAnimationFrame( animate );
+		// measure time
+		lastTimeMsec	= lastTimeMsec || nowMsec-1000/60
+		var deltaMsec	= Math.min(200, nowMsec - lastTimeMsec)
+		lastTimeMsec	= nowMsec
+		// call each update function
+		onRenderFcts.forEach(function(onRenderFct){{
+			onRenderFct(deltaMsec/1000, nowMsec/1000)
+		}})
+	}})
+</script></body>
