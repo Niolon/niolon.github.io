@@ -1,0 +1,2826 @@
+<!DOCTYPE html>
+<head>
+    <meta charset="UTF-8">
+</head>
+<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+<!-- three.js library -->
+<script src='js/three.min.js'></script>
+<!-- ar.js -->
+<script src="js/ar.js"></script>
+<script>THREEx.ArToolkitContext.baseURL = '.'</script>
+
+<body style='margin : 0px; overflow: hidden; font-family: Monospace;'><div style='position: absolute; top: 10px; width:100%; text-align: center; z-index: 1;'>
+<script>
+	//////////////////////////////////////////////////////////////////////////////////
+	//		Init
+	//////////////////////////////////////////////////////////////////////////////////
+
+	// init renderer
+	var renderer	= new THREE.WebGLRenderer({
+		antialias: true,
+		alpha: true
+	});
+	renderer.setClearColor(new THREE.Color('lightgrey'), 0)
+	renderer.setSize( 640, 480 );
+	renderer.domElement.style.position = 'absolute'
+	renderer.domElement.style.top = '0px'
+	renderer.domElement.style.left = '0px'
+	document.body.appendChild( renderer.domElement );
+
+	// array of functions for the rendering loop
+	var onRenderFcts= [];
+
+	// init scene and camera
+    var scene	= new THREE.Scene();
+
+	//////////////////////////////////////////////////////////////////////////////////
+	//		Initialize a basic camera
+	//////////////////////////////////////////////////////////////////////////////////
+
+	// Create a camera
+	var camera = new THREE.Camera();
+	scene.add(camera);
+
+	////////////////////////////////////////////////////////////////////////////////
+	//          handle arToolkitSource
+	////////////////////////////////////////////////////////////////////////////////
+
+	var arToolkitSource = new THREEx.ArToolkitSource({
+		// to read from the webcam
+		sourceType : 'webcam',
+
+		// // to read from an image
+		// sourceType : 'image',
+		// sourceUrl : THREEx.ArToolkitContext.baseURL + '../data/images/img.jpg',
+
+		// to read from a video
+		// sourceType : 'video',
+		// sourceUrl : THREEx.ArToolkitContext.baseURL + '../data/videos/headtracking.mp4',
+	})
+
+	arToolkitSource.init(function onReady(){
+        setTimeout(() => {
+            onResize()
+        }, 2000);
+	})
+
+	// handle resize
+	window.addEventListener('resize', function(){
+		onResize()
+    })
+
+	function onResize(){
+		arToolkitSource.onResizeElement()
+		arToolkitSource.copyElementSizeTo(renderer.domElement)
+		if( arToolkitContext.arController !== null ){
+			arToolkitSource.copyElementSizeTo(arToolkitContext.arController.canvas)
+		}
+	}
+	////////////////////////////////////////////////////////////////////////////////
+	//          initialize arToolkitContext
+	////////////////////////////////////////////////////////////////////////////////
+
+
+	// create atToolkitContext
+	var arToolkitContext = new THREEx.ArToolkitContext({
+		// debug - true if one should display artoolkit debug canvas, false otherwise
+		debug: false,
+		// the mode of detection - ['color', 'color_and_matrix', 'mono', 'mono_and_matrix']
+		detectionMode: "mono_and_matrix",
+		// type of matrix code - valid iif detectionMode end with 'matrix' - [3x3, 3x3_HAMMING63, 3x3_PARITY65, 4x4, 4x4_BCH_13_9_3, 4x4_BCH_13_5_5]
+		matrixCodeType: "4x4_BCH_13_5_5",
+		// Pattern ratio for custom markers
+		// patternRatio: 0.5
+		// Labeling mode for markers - ['black_region', 'white_region']
+		// black_region: Black bordered markers on a white background, white_region: White bordered markers on a black background
+		// labelingMode: 'black_region',
+		// url of the camera parameters
+		cameraParametersUrl: THREEx.ArToolkitContext.baseURL + './js/camera_para.dat',
+		// tune the maximum rate of pose detection in the source image
+		maxDetectionRate: 60,
+		// resolution of at which we detect pose in the source image
+		canvasWidth: 640,
+		canvasHeight: 480,
+		// enable image smoothing or not for canvas copy - default to true
+		// https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/imageSmoothingEnabled
+		imageSmoothingEnabled : true,
+	})
+	// initialize it
+	arToolkitContext.init(function onCompleted(){
+		// copy projection matrix to camera
+		camera.projectionMatrix.copy( arToolkitContext.getProjectionMatrix() );
+	})
+
+	// update artoolkit on every frame
+	onRenderFcts.push(function(){
+		if( arToolkitSource.ready === false )	return
+
+		arToolkitContext.update( arToolkitSource.domElement )
+
+		// update scene.visible if the marker is seen
+		scene.visible = camera.visible
+	})
+    
+	var sphere_geom = new THREE.SphereBufferGeometry(1, 12, 12);
+	var marker_geom = new THREE.CylinderBufferGeometry(1, 1, 0.2, 12, 1, true);
+
+	bond_mat = new THREE.MeshPhysicalMaterial({color: "#aaaaaa"})
+
+
+        ////////////////////////////////////////////////////////////////////////////////
+        //          Entries for ylid.cif
+        ////////////////////////////////////////////////////////////////////////////////
+        var markerRoot = new THREE.Group
+        scene.add(markerRoot)
+        // init controls for camera
+        var markerControls = new THREEx.ArMarkerControls(arToolkitContext, markerRoot, {
+            // size of the marker in meter
+            size: 5,
+            // type of marker - ['pattern', 'barcode', 'unknown' ]
+            type: 'barcode',
+            // url of the pattern - IIF type='pattern'
+            // patternUrl: null,
+            // value of the barcode - IIF type='barcode'
+            barcodeValue: 0,
+            // change matrix mode - [modelViewMatrix, cameraTransformMatrix]
+            changeMatrixMode: "modelViewMatrix",
+            //changeMatrixMode: "cameraTransformMatrix",
+            // turn on/off camera smoothing
+            smooth: true,
+            // number of matrices to smooth tracking over, more = smoother but slower follow
+            smoothCount: 5,
+            // distance tolerance for smoothing, if smoothThreshold # of matrices are under tolerance, tracking will stay still
+            smoothTolerance: 0.01,
+            // threshold for smoothing, will keep still unless enough matrices are over tolerance
+            smoothThreshold: 2
+        })
+    
+    //S001
+        mat = new THREE.MeshPhysicalMaterial({color:"#ffff30"});
+        mesh = new THREE.Mesh(sphere_geom, mat);
+        mesh.scale.x = 0.18133059452995795;
+        mesh.scale.y = 0.13821496766950997;
+        mesh.scale.z = 0.14224135544745173;
+        m = new THREE.Matrix4();
+        m.set(-0.6657821734232129, 0.7025697438925991, -0.2512565472152896, 0, 
+              0.3238451829562796, 0.5754578331774484, 0.7509810781309546, 0,
+              0.6722041319628109, 0.41862159189583564, -0.6106533941367389, 0,
+              0,            0,            0,            1);
+        mesh.setRotationFromMatrix(m);
+        mesh.position.x = -1.9280287291818088;
+        mesh.position.y = 1.3120855391933002;
+        mesh.position.z = -2.187897799331078;
+        markerRoot.add(mesh);
+
+        mat = new THREE.MeshPhysicalMaterial({color: "#000000"});
+        mesh = new THREE.Mesh(marker_geom, mat);
+        mesh.scale.x = 0.18933059452995796;
+        mesh.scale.y = 0.14621496766950998;
+        mesh.scale.z = 0.15024135544745174;
+        mesh.setRotationFromMatrix(m);
+        mesh.position.x = -1.9280287291818088;
+        mesh.position.y = 1.3120855391933002;
+        mesh.position.z = -2.187897799331078;
+        markerRoot.add(mesh);
+
+        mat = new THREE.MeshPhysicalMaterial({color: "#000000"});
+        mesh = new THREE.Mesh(marker_geom, mat);
+        mesh.scale.x = 0.18933059452995796;
+        mesh.scale.y = 0.15024135544745174;
+        mesh.scale.z = 0.14621496766950998;
+        m = new THREE.Matrix4();
+        m.set(-0.6657821734232129, 0.2512565472152896, 0.7025697438925991, 0, 
+              0.3238451829562796, -0.7509810781309546, 0.5754578331774484, 0,
+              0.6722041319628109, 0.6106533941367389, 0.41862159189583564, 0,
+              0,            0,            0,            1);
+        mesh.setRotationFromMatrix(m);    
+        mesh.position.x = -1.9280287291818088;
+        mesh.position.y = 1.3120855391933002;
+        mesh.position.z = -2.187897799331078;
+        markerRoot.add(mesh);
+
+        mat = new THREE.MeshPhysicalMaterial({color: "#000000"});
+        mesh = new THREE.Mesh(marker_geom, mat);
+        mesh.scale.x = 0.14621496766950998;
+        mesh.scale.y = 0.18933059452995796;
+        mesh.scale.z = 0.15024135544745174;
+        m = new THREE.Matrix4();
+        m.set(-0.7025697438925991, -0.6657821734232129, -0.2512565472152896, 0, 
+              -0.5754578331774484, 0.3238451829562796, 0.7509810781309546, 0,
+              -0.41862159189583564, 0.6722041319628109, -0.6106533941367389, 0,
+              0,            0,            0,            1);
+        mesh.setRotationFromMatrix(m);   
+        mesh.position.x = -1.9280287291818088;
+        mesh.position.y = 1.3120855391933002;
+        mesh.position.z = -2.187897799331078;
+        markerRoot.add(mesh);
+        
+    //O002
+        mat = new THREE.MeshPhysicalMaterial({color:"#ff0d0d"});
+        mesh = new THREE.Mesh(sphere_geom, mat);
+        mesh.scale.x = 0.23404297862206147;
+        mesh.scale.y = 0.14638532801832518;
+        mesh.scale.z = 0.18293819967049155;
+        m = new THREE.Matrix4();
+        m.set(0.7228652038851128, -0.529749259692094, -0.44365709604131515, 0, 
+              -0.49351597692164817, -0.8452040323184621, 0.2051149050549066, 0,
+              -0.48364023564546993, 0.07068143750866084, -0.8724083085668681, 0,
+              0,            0,            0,            1);
+        mesh.setRotationFromMatrix(m);
+        mesh.position.x = 1.2672783592891166;
+        mesh.position.y = 1.520772772802699;
+        mesh.position.z = -2.2879256542375384;
+        markerRoot.add(mesh);
+
+        mat = new THREE.MeshPhysicalMaterial({color: "#ffffff"});
+        mesh = new THREE.Mesh(marker_geom, mat);
+        mesh.scale.x = 0.24204297862206148;
+        mesh.scale.y = 0.1543853280183252;
+        mesh.scale.z = 0.19093819967049155;
+        mesh.setRotationFromMatrix(m);
+        mesh.position.x = 1.2672783592891166;
+        mesh.position.y = 1.520772772802699;
+        mesh.position.z = -2.2879256542375384;
+        markerRoot.add(mesh);
+
+        mat = new THREE.MeshPhysicalMaterial({color: "#ffffff"});
+        mesh = new THREE.Mesh(marker_geom, mat);
+        mesh.scale.x = 0.24204297862206148;
+        mesh.scale.y = 0.19093819967049155;
+        mesh.scale.z = 0.1543853280183252;
+        m = new THREE.Matrix4();
+        m.set(0.7228652038851128, 0.44365709604131515, -0.529749259692094, 0, 
+              -0.49351597692164817, -0.2051149050549066, -0.8452040323184621, 0,
+              -0.48364023564546993, 0.8724083085668681, 0.07068143750866084, 0,
+              0,            0,            0,            1);
+        mesh.setRotationFromMatrix(m);    
+        mesh.position.x = 1.2672783592891166;
+        mesh.position.y = 1.520772772802699;
+        mesh.position.z = -2.2879256542375384;
+        markerRoot.add(mesh);
+
+        mat = new THREE.MeshPhysicalMaterial({color: "#ffffff"});
+        mesh = new THREE.Mesh(marker_geom, mat);
+        mesh.scale.x = 0.1543853280183252;
+        mesh.scale.y = 0.24204297862206148;
+        mesh.scale.z = 0.19093819967049155;
+        m = new THREE.Matrix4();
+        m.set(0.529749259692094, 0.7228652038851128, -0.44365709604131515, 0, 
+              0.8452040323184621, -0.49351597692164817, 0.2051149050549066, 0,
+              -0.07068143750866084, -0.48364023564546993, -0.8724083085668681, 0,
+              0,            0,            0,            1);
+        mesh.setRotationFromMatrix(m);   
+        mesh.position.x = 1.2672783592891166;
+        mesh.position.y = 1.520772772802699;
+        mesh.position.z = -2.2879256542375384;
+        markerRoot.add(mesh);
+        
+    //O003
+        mat = new THREE.MeshPhysicalMaterial({color:"#ff0d0d"});
+        mesh = new THREE.Mesh(sphere_geom, mat);
+        mesh.scale.x = 0.14659139190988385;
+        mesh.scale.y = 0.18514155163586618;
+        mesh.scale.z = 0.2208577906160132;
+        m = new THREE.Matrix4();
+        m.set(-0.6932476868125776, -0.6800572353210522, 0.23859966767893395, 0, 
+              -0.6497813969306404, 0.4465728247172522, -0.615107184502766, 0,
+              0.3117559637470881, -0.581459258169944, -0.7514741180882962, 0,
+              0,            0,            0,            1);
+        mesh.setRotationFromMatrix(m);
+        mesh.position.x = -2.102333411887759;
+        mesh.position.y = 1.4744506884559097;
+        mesh.position.z = 1.0493488466459309;
+        markerRoot.add(mesh);
+
+        mat = new THREE.MeshPhysicalMaterial({color: "#ffffff"});
+        mesh = new THREE.Mesh(marker_geom, mat);
+        mesh.scale.x = 0.15459139190988386;
+        mesh.scale.y = 0.1931415516358662;
+        mesh.scale.z = 0.22885779061601322;
+        mesh.setRotationFromMatrix(m);
+        mesh.position.x = -2.102333411887759;
+        mesh.position.y = 1.4744506884559097;
+        mesh.position.z = 1.0493488466459309;
+        markerRoot.add(mesh);
+
+        mat = new THREE.MeshPhysicalMaterial({color: "#ffffff"});
+        mesh = new THREE.Mesh(marker_geom, mat);
+        mesh.scale.x = 0.15459139190988386;
+        mesh.scale.y = 0.22885779061601322;
+        mesh.scale.z = 0.1931415516358662;
+        m = new THREE.Matrix4();
+        m.set(-0.6932476868125776, -0.23859966767893395, -0.6800572353210522, 0, 
+              -0.6497813969306404, 0.615107184502766, 0.4465728247172522, 0,
+              0.3117559637470881, 0.7514741180882962, -0.581459258169944, 0,
+              0,            0,            0,            1);
+        mesh.setRotationFromMatrix(m);    
+        mesh.position.x = -2.102333411887759;
+        mesh.position.y = 1.4744506884559097;
+        mesh.position.z = 1.0493488466459309;
+        markerRoot.add(mesh);
+
+        mat = new THREE.MeshPhysicalMaterial({color: "#ffffff"});
+        mesh = new THREE.Mesh(marker_geom, mat);
+        mesh.scale.x = 0.1931415516358662;
+        mesh.scale.y = 0.15459139190988386;
+        mesh.scale.z = 0.22885779061601322;
+        m = new THREE.Matrix4();
+        m.set(0.6800572353210522, -0.6932476868125776, 0.23859966767893395, 0, 
+              -0.4465728247172522, -0.6497813969306404, -0.615107184502766, 0,
+              0.581459258169944, 0.3117559637470881, -0.7514741180882962, 0,
+              0,            0,            0,            1);
+        mesh.setRotationFromMatrix(m);   
+        mesh.position.x = -2.102333411887759;
+        mesh.position.y = 1.4744506884559097;
+        mesh.position.z = 1.0493488466459309;
+        markerRoot.add(mesh);
+        
+    //C004
+        mat = new THREE.MeshPhysicalMaterial({color:"#000000"});
+        mesh = new THREE.Mesh(sphere_geom, mat);
+        mesh.scale.x = 0.17397186216867117;
+        mesh.scale.y = 0.15246707560475267;
+        mesh.scale.z = 0.1453921697688687;
+        m = new THREE.Matrix4();
+        m.set(-0.9428237333018082, 0.32282468458111113, 0.08287117078904535, 0, 
+              0.15849177101923947, 0.21553310115347382, 0.9635485669266245, 0,
+              0.2931957817602871, 0.9215908557121607, -0.25437477906762074, 0,
+              0,            0,            0,            1);
+        mesh.setRotationFromMatrix(m);
+        mesh.position.x = 0.6622590450940529;
+        mesh.position.y = 1.454762615093564;
+        mesh.position.z = -1.2183617949554761;
+        markerRoot.add(mesh);
+
+        mat = new THREE.MeshPhysicalMaterial({color: "#ffffff"});
+        mesh = new THREE.Mesh(marker_geom, mat);
+        mesh.scale.x = 0.18197186216867117;
+        mesh.scale.y = 0.16046707560475268;
+        mesh.scale.z = 0.1533921697688687;
+        mesh.setRotationFromMatrix(m);
+        mesh.position.x = 0.6622590450940529;
+        mesh.position.y = 1.454762615093564;
+        mesh.position.z = -1.2183617949554761;
+        markerRoot.add(mesh);
+
+        mat = new THREE.MeshPhysicalMaterial({color: "#ffffff"});
+        mesh = new THREE.Mesh(marker_geom, mat);
+        mesh.scale.x = 0.18197186216867117;
+        mesh.scale.y = 0.1533921697688687;
+        mesh.scale.z = 0.16046707560475268;
+        m = new THREE.Matrix4();
+        m.set(-0.9428237333018082, -0.08287117078904535, 0.32282468458111113, 0, 
+              0.15849177101923947, -0.9635485669266245, 0.21553310115347382, 0,
+              0.2931957817602871, 0.25437477906762074, 0.9215908557121607, 0,
+              0,            0,            0,            1);
+        mesh.setRotationFromMatrix(m);    
+        mesh.position.x = 0.6622590450940529;
+        mesh.position.y = 1.454762615093564;
+        mesh.position.z = -1.2183617949554761;
+        markerRoot.add(mesh);
+
+        mat = new THREE.MeshPhysicalMaterial({color: "#ffffff"});
+        mesh = new THREE.Mesh(marker_geom, mat);
+        mesh.scale.x = 0.16046707560475268;
+        mesh.scale.y = 0.18197186216867117;
+        mesh.scale.z = 0.1533921697688687;
+        m = new THREE.Matrix4();
+        m.set(-0.32282468458111113, -0.9428237333018082, 0.08287117078904535, 0, 
+              -0.21553310115347382, 0.15849177101923947, 0.9635485669266245, 0,
+              -0.9215908557121607, 0.2931957817602871, -0.25437477906762074, 0,
+              0,            0,            0,            1);
+        mesh.setRotationFromMatrix(m);   
+        mesh.position.x = 0.6622590450940529;
+        mesh.position.y = 1.454762615093564;
+        mesh.position.z = -1.2183617949554761;
+        markerRoot.add(mesh);
+        
+    //C005
+        mat = new THREE.MeshPhysicalMaterial({color:"#000000"});
+        mesh = new THREE.Mesh(sphere_geom, mat);
+        mesh.scale.x = 0.25041094284910326;
+        mesh.scale.y = 0.14987048161870448;
+        mesh.scale.z = 0.19193985110133002;
+        m = new THREE.Matrix4();
+        m.set(0.7842402559194603, 0.5753513733425011, 0.23224559885663598, 0, 
+              0.3450661236952707, -0.09336053684464667, -0.9339235410021525, 0,
+              -0.5156516181234182, 0.8125605253474827, -0.271751359469871, 0,
+              0,            0,            0,            1);
+        mesh.setRotationFromMatrix(m);
+        mesh.position.x = 1.9985922567790244;
+        mesh.position.y = 1.2521431743349103;
+        mesh.position.z = 2.8055936977646363;
+        markerRoot.add(mesh);
+
+        mat = new THREE.MeshPhysicalMaterial({color: "#ffffff"});
+        mesh = new THREE.Mesh(marker_geom, mat);
+        mesh.scale.x = 0.25841094284910326;
+        mesh.scale.y = 0.15787048161870448;
+        mesh.scale.z = 0.19993985110133003;
+        mesh.setRotationFromMatrix(m);
+        mesh.position.x = 1.9985922567790244;
+        mesh.position.y = 1.2521431743349103;
+        mesh.position.z = 2.8055936977646363;
+        markerRoot.add(mesh);
+
+        mat = new THREE.MeshPhysicalMaterial({color: "#ffffff"});
+        mesh = new THREE.Mesh(marker_geom, mat);
+        mesh.scale.x = 0.25841094284910326;
+        mesh.scale.y = 0.19993985110133003;
+        mesh.scale.z = 0.15787048161870448;
+        m = new THREE.Matrix4();
+        m.set(0.7842402559194603, -0.23224559885663598, 0.5753513733425011, 0, 
+              0.3450661236952707, 0.9339235410021525, -0.09336053684464667, 0,
+              -0.5156516181234182, 0.271751359469871, 0.8125605253474827, 0,
+              0,            0,            0,            1);
+        mesh.setRotationFromMatrix(m);    
+        mesh.position.x = 1.9985922567790244;
+        mesh.position.y = 1.2521431743349103;
+        mesh.position.z = 2.8055936977646363;
+        markerRoot.add(mesh);
+
+        mat = new THREE.MeshPhysicalMaterial({color: "#ffffff"});
+        mesh = new THREE.Mesh(marker_geom, mat);
+        mesh.scale.x = 0.15787048161870448;
+        mesh.scale.y = 0.25841094284910326;
+        mesh.scale.z = 0.19993985110133003;
+        m = new THREE.Matrix4();
+        m.set(-0.5753513733425011, 0.7842402559194603, 0.23224559885663598, 0, 
+              0.09336053684464667, 0.3450661236952707, -0.9339235410021525, 0,
+              -0.8125605253474827, -0.5156516181234182, -0.271751359469871, 0,
+              0,            0,            0,            1);
+        mesh.setRotationFromMatrix(m);   
+        mesh.position.x = 1.9985922567790244;
+        mesh.position.y = 1.2521431743349103;
+        mesh.position.z = 2.8055936977646363;
+        markerRoot.add(mesh);
+        
+    //C006
+        mat = new THREE.MeshPhysicalMaterial({color:"#000000"});
+        mesh = new THREE.Mesh(sphere_geom, mat);
+        mesh.scale.x = 0.148920985471035;
+        mesh.scale.y = 0.1540821427741218;
+        mesh.scale.z = 0.161877615390365;
+        m = new THREE.Matrix4();
+        m.set(0.8923455814434856, -0.4513513707694786, 0.001141657917496271, 0, 
+              -0.3368325188734274, -0.6676151593786094, -0.6639532010595746, 0,
+              0.30043837555756714, 0.5920911577387277, -0.7477732566894479, 0,
+              0,            0,            0,            1);
+        mesh.setRotationFromMatrix(m);
+        mesh.position.x = -1.0181493226946268;
+        mesh.position.y = 1.4547626150935635;
+        mesh.position.z = 0.45629078414839963;
+        markerRoot.add(mesh);
+
+        mat = new THREE.MeshPhysicalMaterial({color: "#ffffff"});
+        mesh = new THREE.Mesh(marker_geom, mat);
+        mesh.scale.x = 0.156920985471035;
+        mesh.scale.y = 0.1620821427741218;
+        mesh.scale.z = 0.169877615390365;
+        mesh.setRotationFromMatrix(m);
+        mesh.position.x = -1.0181493226946268;
+        mesh.position.y = 1.4547626150935635;
+        mesh.position.z = 0.45629078414839963;
+        markerRoot.add(mesh);
+
+        mat = new THREE.MeshPhysicalMaterial({color: "#ffffff"});
+        mesh = new THREE.Mesh(marker_geom, mat);
+        mesh.scale.x = 0.156920985471035;
+        mesh.scale.y = 0.169877615390365;
+        mesh.scale.z = 0.1620821427741218;
+        m = new THREE.Matrix4();
+        m.set(0.8923455814434856, -0.001141657917496271, -0.4513513707694786, 0, 
+              -0.3368325188734274, 0.6639532010595746, -0.6676151593786094, 0,
+              0.30043837555756714, 0.7477732566894479, 0.5920911577387277, 0,
+              0,            0,            0,            1);
+        mesh.setRotationFromMatrix(m);    
+        mesh.position.x = -1.0181493226946268;
+        mesh.position.y = 1.4547626150935635;
+        mesh.position.z = 0.45629078414839963;
+        markerRoot.add(mesh);
+
+        mat = new THREE.MeshPhysicalMaterial({color: "#ffffff"});
+        mesh = new THREE.Mesh(marker_geom, mat);
+        mesh.scale.x = 0.1620821427741218;
+        mesh.scale.y = 0.156920985471035;
+        mesh.scale.z = 0.169877615390365;
+        m = new THREE.Matrix4();
+        m.set(0.4513513707694786, 0.8923455814434856, 0.001141657917496271, 0, 
+              0.6676151593786094, -0.3368325188734274, -0.6639532010595746, 0,
+              -0.5920911577387277, 0.30043837555756714, -0.7477732566894479, 0,
+              0,            0,            0,            1);
+        mesh.setRotationFromMatrix(m);   
+        mesh.position.x = -1.0181493226946268;
+        mesh.position.y = 1.4547626150935635;
+        mesh.position.z = 0.45629078414839963;
+        markerRoot.add(mesh);
+        
+    //C007
+        mat = new THREE.MeshPhysicalMaterial({color:"#000000"});
+        mesh = new THREE.Mesh(sphere_geom, mat);
+        mesh.scale.x = 0.15206878689232364;
+        mesh.scale.y = 0.20843342644809137;
+        mesh.scale.z = 0.18870844123198408;
+        m = new THREE.Matrix4();
+        m.set(-0.738373461968759, 0.60515705461771, 0.2976400005151979, 0, 
+              0.019670987864071777, 0.46048402458936505, -0.8874500072310735, 0,
+              -0.6741050978124412, -0.6494146613254113, -0.35191322049459883, 0,
+              0,            0,            0,            1);
+        mesh.setRotationFromMatrix(m);
+        mesh.position.x = 0.6433346925246075;
+        mesh.position.y = 1.3363873138491071;
+        mesh.position.z = 2.4626610365920967;
+        markerRoot.add(mesh);
+
+        mat = new THREE.MeshPhysicalMaterial({color: "#ffffff"});
+        mesh = new THREE.Mesh(marker_geom, mat);
+        mesh.scale.x = 0.16006878689232365;
+        mesh.scale.y = 0.21643342644809138;
+        mesh.scale.z = 0.19670844123198408;
+        mesh.setRotationFromMatrix(m);
+        mesh.position.x = 0.6433346925246075;
+        mesh.position.y = 1.3363873138491071;
+        mesh.position.z = 2.4626610365920967;
+        markerRoot.add(mesh);
+
+        mat = new THREE.MeshPhysicalMaterial({color: "#ffffff"});
+        mesh = new THREE.Mesh(marker_geom, mat);
+        mesh.scale.x = 0.16006878689232365;
+        mesh.scale.y = 0.19670844123198408;
+        mesh.scale.z = 0.21643342644809138;
+        m = new THREE.Matrix4();
+        m.set(-0.738373461968759, -0.2976400005151979, 0.60515705461771, 0, 
+              0.019670987864071777, 0.8874500072310735, 0.46048402458936505, 0,
+              -0.6741050978124412, 0.35191322049459883, -0.6494146613254113, 0,
+              0,            0,            0,            1);
+        mesh.setRotationFromMatrix(m);    
+        mesh.position.x = 0.6433346925246075;
+        mesh.position.y = 1.3363873138491071;
+        mesh.position.z = 2.4626610365920967;
+        markerRoot.add(mesh);
+
+        mat = new THREE.MeshPhysicalMaterial({color: "#ffffff"});
+        mesh = new THREE.Mesh(marker_geom, mat);
+        mesh.scale.x = 0.21643342644809138;
+        mesh.scale.y = 0.16006878689232365;
+        mesh.scale.z = 0.19670844123198408;
+        m = new THREE.Matrix4();
+        m.set(-0.60515705461771, -0.738373461968759, 0.2976400005151979, 0, 
+              -0.46048402458936505, 0.019670987864071777, -0.8874500072310735, 0,
+              0.6494146613254113, -0.6741050978124412, -0.35191322049459883, 0,
+              0,            0,            0,            1);
+        mesh.setRotationFromMatrix(m);   
+        mesh.position.x = 0.6433346925246075;
+        mesh.position.y = 1.3363873138491071;
+        mesh.position.z = 2.4626610365920967;
+        markerRoot.add(mesh);
+        
+    //C008
+        mat = new THREE.MeshPhysicalMaterial({color:"#000000"});
+        mesh = new THREE.Mesh(sphere_geom, mat);
+        mesh.scale.x = 0.17652509803946478;
+        mesh.scale.y = 0.14547184595233187;
+        mesh.scale.z = 0.15839947852621988;
+        m = new THREE.Matrix4();
+        m.set(0.7377137308941851, 0.6593759218240128, 0.14492013306961712, 0, 
+              0.47183342567649217, -0.3500350460901369, -0.8092272146455911, 0,
+              -0.4828578151636029, 0.6653561904930388, -0.5693412597976917, 0,
+              0,            0,            0,            1);
+        mesh.setRotationFromMatrix(m);
+        mesh.position.x = 0.32705759208862833;
+        mesh.position.y = 1.3996963009139047;
+        mesh.position.z = 1.1192792534968437;
+        markerRoot.add(mesh);
+
+        mat = new THREE.MeshPhysicalMaterial({color: "#ffffff"});
+        mesh = new THREE.Mesh(marker_geom, mat);
+        mesh.scale.x = 0.1845250980394648;
+        mesh.scale.y = 0.15347184595233188;
+        mesh.scale.z = 0.1663994785262199;
+        mesh.setRotationFromMatrix(m);
+        mesh.position.x = 0.32705759208862833;
+        mesh.position.y = 1.3996963009139047;
+        mesh.position.z = 1.1192792534968437;
+        markerRoot.add(mesh);
+
+        mat = new THREE.MeshPhysicalMaterial({color: "#ffffff"});
+        mesh = new THREE.Mesh(marker_geom, mat);
+        mesh.scale.x = 0.1845250980394648;
+        mesh.scale.y = 0.1663994785262199;
+        mesh.scale.z = 0.15347184595233188;
+        m = new THREE.Matrix4();
+        m.set(0.7377137308941851, -0.14492013306961712, 0.6593759218240128, 0, 
+              0.47183342567649217, 0.8092272146455911, -0.3500350460901369, 0,
+              -0.4828578151636029, 0.5693412597976917, 0.6653561904930388, 0,
+              0,            0,            0,            1);
+        mesh.setRotationFromMatrix(m);    
+        mesh.position.x = 0.32705759208862833;
+        mesh.position.y = 1.3996963009139047;
+        mesh.position.z = 1.1192792534968437;
+        markerRoot.add(mesh);
+
+        mat = new THREE.MeshPhysicalMaterial({color: "#ffffff"});
+        mesh = new THREE.Mesh(marker_geom, mat);
+        mesh.scale.x = 0.15347184595233188;
+        mesh.scale.y = 0.1845250980394648;
+        mesh.scale.z = 0.1663994785262199;
+        m = new THREE.Matrix4();
+        m.set(-0.6593759218240128, 0.7377137308941851, 0.14492013306961712, 0, 
+              0.3500350460901369, 0.47183342567649217, -0.8092272146455911, 0,
+              -0.6653561904930388, -0.4828578151636029, -0.5693412597976917, 0,
+              0,            0,            0,            1);
+        mesh.setRotationFromMatrix(m);   
+        mesh.position.x = 0.32705759208862833;
+        mesh.position.y = 1.3996963009139047;
+        mesh.position.z = 1.1192792534968437;
+        markerRoot.add(mesh);
+        
+    //C009
+        mat = new THREE.MeshPhysicalMaterial({color:"#000000"});
+        mesh = new THREE.Mesh(sphere_geom, mat);
+        mesh.scale.x = 0.23770508488080955;
+        mesh.scale.y = 0.1461378133379021;
+        mesh.scale.z = 0.17491120357090806;
+        m = new THREE.Matrix4();
+        m.set(-0.9680521869534111, 0.1894811564498362, 0.1642311014550864, 0, 
+              0.04208935712225784, -0.5228809089442216, 0.851365985389773, 0,
+              0.2471911190794547, 0.8310790855340406, 0.4982008673578858, 0,
+              0,            0,            0,            1);
+        mesh.setRotationFromMatrix(m);
+        mesh.position.x = 2.655118867049566;
+        mesh.position.y = 1.2905646306663077;
+        mesh.position.z = 0.4638339499005747;
+        markerRoot.add(mesh);
+
+        mat = new THREE.MeshPhysicalMaterial({color: "#ffffff"});
+        mesh = new THREE.Mesh(marker_geom, mat);
+        mesh.scale.x = 0.24570508488080955;
+        mesh.scale.y = 0.1541378133379021;
+        mesh.scale.z = 0.18291120357090807;
+        mesh.setRotationFromMatrix(m);
+        mesh.position.x = 2.655118867049566;
+        mesh.position.y = 1.2905646306663077;
+        mesh.position.z = 0.4638339499005747;
+        markerRoot.add(mesh);
+
+        mat = new THREE.MeshPhysicalMaterial({color: "#ffffff"});
+        mesh = new THREE.Mesh(marker_geom, mat);
+        mesh.scale.x = 0.24570508488080955;
+        mesh.scale.y = 0.18291120357090807;
+        mesh.scale.z = 0.1541378133379021;
+        m = new THREE.Matrix4();
+        m.set(-0.9680521869534111, -0.1642311014550864, 0.1894811564498362, 0, 
+              0.04208935712225784, -0.851365985389773, -0.5228809089442216, 0,
+              0.2471911190794547, -0.4982008673578858, 0.8310790855340406, 0,
+              0,            0,            0,            1);
+        mesh.setRotationFromMatrix(m);    
+        mesh.position.x = 2.655118867049566;
+        mesh.position.y = 1.2905646306663077;
+        mesh.position.z = 0.4638339499005747;
+        markerRoot.add(mesh);
+
+        mat = new THREE.MeshPhysicalMaterial({color: "#ffffff"});
+        mesh = new THREE.Mesh(marker_geom, mat);
+        mesh.scale.x = 0.1541378133379021;
+        mesh.scale.y = 0.24570508488080955;
+        mesh.scale.z = 0.18291120357090807;
+        m = new THREE.Matrix4();
+        m.set(-0.1894811564498362, -0.9680521869534111, 0.1642311014550864, 0, 
+              0.5228809089442216, 0.04208935712225784, 0.851365985389773, 0,
+              -0.8310790855340406, 0.2471911190794547, 0.4982008673578858, 0,
+              0,            0,            0,            1);
+        mesh.setRotationFromMatrix(m);   
+        mesh.position.x = 2.655118867049566;
+        mesh.position.y = 1.2905646306663077;
+        mesh.position.z = 0.4638339499005747;
+        markerRoot.add(mesh);
+        
+    //C00A
+        mat = new THREE.MeshPhysicalMaterial({color:"#000000"});
+        mesh = new THREE.Mesh(sphere_geom, mat);
+        mesh.scale.x = 0.1874295562114271;
+        mesh.scale.y = 0.14391180031590153;
+        mesh.scale.z = 0.1523540225534711;
+        m = new THREE.Matrix4();
+        m.set(-0.9570596440831721, -0.28882081737311827, -0.024887207945365655, 0, 
+              -0.1096318339746266, 0.44008145420830447, -0.8912402451871572, 0,
+              0.2683611347545541, -0.8502416416018612, -0.45284815583087, 0,
+              0,            0,            0,            1);
+        mesh.setRotationFromMatrix(m);
+        mesh.position.x = 1.314676323046186;
+        mesh.position.y = 1.3833924082439109;
+        mesh.position.z = 0.13576602608489344;
+        markerRoot.add(mesh);
+
+        mat = new THREE.MeshPhysicalMaterial({color: "#ffffff"});
+        mesh = new THREE.Mesh(marker_geom, mat);
+        mesh.scale.x = 0.1954295562114271;
+        mesh.scale.y = 0.15191180031590154;
+        mesh.scale.z = 0.16035402255347111;
+        mesh.setRotationFromMatrix(m);
+        mesh.position.x = 1.314676323046186;
+        mesh.position.y = 1.3833924082439109;
+        mesh.position.z = 0.13576602608489344;
+        markerRoot.add(mesh);
+
+        mat = new THREE.MeshPhysicalMaterial({color: "#ffffff"});
+        mesh = new THREE.Mesh(marker_geom, mat);
+        mesh.scale.x = 0.1954295562114271;
+        mesh.scale.y = 0.16035402255347111;
+        mesh.scale.z = 0.15191180031590154;
+        m = new THREE.Matrix4();
+        m.set(-0.9570596440831721, 0.024887207945365655, -0.28882081737311827, 0, 
+              -0.1096318339746266, 0.8912402451871572, 0.44008145420830447, 0,
+              0.2683611347545541, 0.45284815583087, -0.8502416416018612, 0,
+              0,            0,            0,            1);
+        mesh.setRotationFromMatrix(m);    
+        mesh.position.x = 1.314676323046186;
+        mesh.position.y = 1.3833924082439109;
+        mesh.position.z = 0.13576602608489344;
+        markerRoot.add(mesh);
+
+        mat = new THREE.MeshPhysicalMaterial({color: "#ffffff"});
+        mesh = new THREE.Mesh(marker_geom, mat);
+        mesh.scale.x = 0.15191180031590154;
+        mesh.scale.y = 0.1954295562114271;
+        mesh.scale.z = 0.16035402255347111;
+        m = new THREE.Matrix4();
+        m.set(0.28882081737311827, -0.9570596440831721, -0.024887207945365655, 0, 
+              -0.44008145420830447, -0.1096318339746266, -0.8912402451871572, 0,
+              0.8502416416018612, 0.2683611347545541, -0.45284815583087, 0,
+              0,            0,            0,            1);
+        mesh.setRotationFromMatrix(m);   
+        mesh.position.x = 1.314676323046186;
+        mesh.position.y = 1.3833924082439109;
+        mesh.position.z = 0.13576602608489344;
+        markerRoot.add(mesh);
+        
+    //C00B
+        mat = new THREE.MeshPhysicalMaterial({color:"#000000"});
+        mesh = new THREE.Mesh(sphere_geom, mat);
+        mesh.scale.x = 0.2598260128079738;
+        mesh.scale.y = 0.19631430026473679;
+        mesh.scale.z = 0.1583191320715137;
+        m = new THREE.Matrix4();
+        m.set(-0.9726862538876969, -0.20326405112068976, 0.11209450039999162, 0, 
+              -0.19526609457180003, 0.977616388608623, 0.07834123457356547, 0,
+              -0.12550937737314688, 0.05431318666621544, -0.9906046002041206, 0,
+              0,            0,            0,            1);
+        mesh.setRotationFromMatrix(m);
+        mesh.position.x = -2.993301752641137;
+        mesh.position.y = 2.7511175783824497;
+        mesh.position.z = -2.059931392729525;
+        markerRoot.add(mesh);
+
+        mat = new THREE.MeshPhysicalMaterial({color: "#ffffff"});
+        mesh = new THREE.Mesh(marker_geom, mat);
+        mesh.scale.x = 0.2678260128079738;
+        mesh.scale.y = 0.2043143002647368;
+        mesh.scale.z = 0.16631913207151372;
+        mesh.setRotationFromMatrix(m);
+        mesh.position.x = -2.993301752641137;
+        mesh.position.y = 2.7511175783824497;
+        mesh.position.z = -2.059931392729525;
+        markerRoot.add(mesh);
+
+        mat = new THREE.MeshPhysicalMaterial({color: "#ffffff"});
+        mesh = new THREE.Mesh(marker_geom, mat);
+        mesh.scale.x = 0.2678260128079738;
+        mesh.scale.y = 0.16631913207151372;
+        mesh.scale.z = 0.2043143002647368;
+        m = new THREE.Matrix4();
+        m.set(-0.9726862538876969, -0.11209450039999162, -0.20326405112068976, 0, 
+              -0.19526609457180003, -0.07834123457356547, 0.977616388608623, 0,
+              -0.12550937737314688, 0.9906046002041206, 0.05431318666621544, 0,
+              0,            0,            0,            1);
+        mesh.setRotationFromMatrix(m);    
+        mesh.position.x = -2.993301752641137;
+        mesh.position.y = 2.7511175783824497;
+        mesh.position.z = -2.059931392729525;
+        markerRoot.add(mesh);
+
+        mat = new THREE.MeshPhysicalMaterial({color: "#ffffff"});
+        mesh = new THREE.Mesh(marker_geom, mat);
+        mesh.scale.x = 0.2043143002647368;
+        mesh.scale.y = 0.2678260128079738;
+        mesh.scale.z = 0.16631913207151372;
+        m = new THREE.Matrix4();
+        m.set(0.20326405112068976, -0.9726862538876969, 0.11209450039999162, 0, 
+              -0.977616388608623, -0.19526609457180003, 0.07834123457356547, 0,
+              -0.05431318666621544, -0.12550937737314688, -0.9906046002041206, 0,
+              0,            0,            0,            1);
+        mesh.setRotationFromMatrix(m);   
+        mesh.position.x = -2.993301752641137;
+        mesh.position.y = 2.7511175783824497;
+        mesh.position.z = -2.059931392729525;
+        markerRoot.add(mesh);
+        
+    //C00C
+        mat = new THREE.MeshPhysicalMaterial({color:"#000000"});
+        mesh = new THREE.Mesh(sphere_geom, mat);
+        mesh.scale.x = 0.17846531746618807;
+        mesh.scale.y = 0.1517042870820609;
+        mesh.scale.z = 0.1391613406899214;
+        m = new THREE.Matrix4();
+        m.set(0.6093134857813424, -0.7329366960984244, -0.30255722691305253, 0, 
+              -0.5169916028751633, -0.656528191571665, 0.5492635216616957, 0,
+              -0.6012127398862728, -0.17825412529297974, -0.778953598242203, 0,
+              0,            0,            0,            1);
+        mesh.setRotationFromMatrix(m);
+        mesh.position.x = -0.7548730052294861;
+        mesh.position.y = 1.4547626150935635;
+        mesh.position.z = -0.9537640690388878;
+        markerRoot.add(mesh);
+
+        mat = new THREE.MeshPhysicalMaterial({color: "#ffffff"});
+        mesh = new THREE.Mesh(marker_geom, mat);
+        mesh.scale.x = 0.18646531746618808;
+        mesh.scale.y = 0.15970428708206091;
+        mesh.scale.z = 0.1471613406899214;
+        mesh.setRotationFromMatrix(m);
+        mesh.position.x = -0.7548730052294861;
+        mesh.position.y = 1.4547626150935635;
+        mesh.position.z = -0.9537640690388878;
+        markerRoot.add(mesh);
+
+        mat = new THREE.MeshPhysicalMaterial({color: "#ffffff"});
+        mesh = new THREE.Mesh(marker_geom, mat);
+        mesh.scale.x = 0.18646531746618808;
+        mesh.scale.y = 0.1471613406899214;
+        mesh.scale.z = 0.15970428708206091;
+        m = new THREE.Matrix4();
+        m.set(0.6093134857813424, 0.30255722691305253, -0.7329366960984244, 0, 
+              -0.5169916028751633, -0.5492635216616957, -0.656528191571665, 0,
+              -0.6012127398862728, 0.778953598242203, -0.17825412529297974, 0,
+              0,            0,            0,            1);
+        mesh.setRotationFromMatrix(m);    
+        mesh.position.x = -0.7548730052294861;
+        mesh.position.y = 1.4547626150935635;
+        mesh.position.z = -0.9537640690388878;
+        markerRoot.add(mesh);
+
+        mat = new THREE.MeshPhysicalMaterial({color: "#ffffff"});
+        mesh = new THREE.Mesh(marker_geom, mat);
+        mesh.scale.x = 0.15970428708206091;
+        mesh.scale.y = 0.18646531746618808;
+        mesh.scale.z = 0.1471613406899214;
+        m = new THREE.Matrix4();
+        m.set(0.7329366960984244, 0.6093134857813424, -0.30255722691305253, 0, 
+              0.656528191571665, -0.5169916028751633, 0.5492635216616957, 0,
+              0.17825412529297974, -0.6012127398862728, -0.778953598242203, 0,
+              0,            0,            0,            1);
+        mesh.setRotationFromMatrix(m);   
+        mesh.position.x = -0.7548730052294861;
+        mesh.position.y = 1.4547626150935635;
+        mesh.position.z = -0.9537640690388878;
+        markerRoot.add(mesh);
+        
+    //C00D
+        mat = new THREE.MeshPhysicalMaterial({color:"#000000"});
+        mesh = new THREE.Mesh(sphere_geom, mat);
+        mesh.scale.x = 0.26272927510468636;
+        mesh.scale.y = 0.14591781653433414;
+        mesh.scale.z = 0.18711789016771876;
+        m = new THREE.Matrix4();
+        m.set(-0.9339378453925088, -0.35311489860871237, 0.05540730388818355, 0, 
+              -0.18117611919491627, 0.33404585755466887, -0.9249803127007818, 0,
+              0.3081157489922712, -0.8739126005677714, -0.37595405542673305, 0,
+              0,            0,            0,            1);
+        mesh.setRotationFromMatrix(m);
+        mesh.position.x = 2.9861197210672508;
+        mesh.position.y = 1.2240416056127346;
+        mesh.position.z = 1.8282884277156146;
+        markerRoot.add(mesh);
+
+        mat = new THREE.MeshPhysicalMaterial({color: "#ffffff"});
+        mesh = new THREE.Mesh(marker_geom, mat);
+        mesh.scale.x = 0.27072927510468636;
+        mesh.scale.y = 0.15391781653433415;
+        mesh.scale.z = 0.19511789016771877;
+        mesh.setRotationFromMatrix(m);
+        mesh.position.x = 2.9861197210672508;
+        mesh.position.y = 1.2240416056127346;
+        mesh.position.z = 1.8282884277156146;
+        markerRoot.add(mesh);
+
+        mat = new THREE.MeshPhysicalMaterial({color: "#ffffff"});
+        mesh = new THREE.Mesh(marker_geom, mat);
+        mesh.scale.x = 0.27072927510468636;
+        mesh.scale.y = 0.19511789016771877;
+        mesh.scale.z = 0.15391781653433415;
+        m = new THREE.Matrix4();
+        m.set(-0.9339378453925088, -0.05540730388818355, -0.35311489860871237, 0, 
+              -0.18117611919491627, 0.9249803127007818, 0.33404585755466887, 0,
+              0.3081157489922712, 0.37595405542673305, -0.8739126005677714, 0,
+              0,            0,            0,            1);
+        mesh.setRotationFromMatrix(m);    
+        mesh.position.x = 2.9861197210672508;
+        mesh.position.y = 1.2240416056127346;
+        mesh.position.z = 1.8282884277156146;
+        markerRoot.add(mesh);
+
+        mat = new THREE.MeshPhysicalMaterial({color: "#ffffff"});
+        mesh = new THREE.Mesh(marker_geom, mat);
+        mesh.scale.x = 0.15391781653433415;
+        mesh.scale.y = 0.27072927510468636;
+        mesh.scale.z = 0.19511789016771877;
+        m = new THREE.Matrix4();
+        m.set(0.35311489860871237, -0.9339378453925088, 0.05540730388818355, 0, 
+              -0.33404585755466887, -0.18117611919491627, -0.9249803127007818, 0,
+              0.8739126005677714, 0.3081157489922712, -0.37595405542673305, 0,
+              0,            0,            0,            1);
+        mesh.setRotationFromMatrix(m);   
+        mesh.position.x = 2.9861197210672508;
+        mesh.position.y = 1.2240416056127346;
+        mesh.position.z = 1.8282884277156146;
+        markerRoot.add(mesh);
+        
+    //C00E
+        mat = new THREE.MeshPhysicalMaterial({color:"#000000"});
+        mesh = new THREE.Mesh(sphere_geom, mat);
+        mesh.scale.x = 0.2190893252703108;
+        mesh.scale.y = 0.17839095895724713;
+        mesh.scale.z = 0.1473138361285649;
+        m = new THREE.Matrix4();
+        m.set(0.4761041020920793, 0.7743763740072979, 0.41673266652664104, 0, 
+              0.10799744543151876, 0.41881375446947644, -0.9016271906100919, 0,
+              -0.8727321672491286, 0.474274467419964, 0.11576827632019257, 0,
+              0,            0,            0,            1);
+        mesh.setRotationFromMatrix(m);
+        mesh.position.x = -3.0577506353036266;
+        mesh.position.y = 0.05;
+        mesh.position.z = -1.6131813120564777;
+        markerRoot.add(mesh);
+
+        mat = new THREE.MeshPhysicalMaterial({color: "#ffffff"});
+        mesh = new THREE.Mesh(marker_geom, mat);
+        mesh.scale.x = 0.2270893252703108;
+        mesh.scale.y = 0.18639095895724714;
+        mesh.scale.z = 0.15531383612856492;
+        mesh.setRotationFromMatrix(m);
+        mesh.position.x = -3.0577506353036266;
+        mesh.position.y = 0.05;
+        mesh.position.z = -1.6131813120564777;
+        markerRoot.add(mesh);
+
+        mat = new THREE.MeshPhysicalMaterial({color: "#ffffff"});
+        mesh = new THREE.Mesh(marker_geom, mat);
+        mesh.scale.x = 0.2270893252703108;
+        mesh.scale.y = 0.15531383612856492;
+        mesh.scale.z = 0.18639095895724714;
+        m = new THREE.Matrix4();
+        m.set(0.4761041020920793, -0.41673266652664104, 0.7743763740072979, 0, 
+              0.10799744543151876, 0.9016271906100919, 0.41881375446947644, 0,
+              -0.8727321672491286, -0.11576827632019257, 0.474274467419964, 0,
+              0,            0,            0,            1);
+        mesh.setRotationFromMatrix(m);    
+        mesh.position.x = -3.0577506353036266;
+        mesh.position.y = 0.05;
+        mesh.position.z = -1.6131813120564777;
+        markerRoot.add(mesh);
+
+        mat = new THREE.MeshPhysicalMaterial({color: "#ffffff"});
+        mesh = new THREE.Mesh(marker_geom, mat);
+        mesh.scale.x = 0.18639095895724714;
+        mesh.scale.y = 0.2270893252703108;
+        mesh.scale.z = 0.15531383612856492;
+        m = new THREE.Matrix4();
+        m.set(-0.7743763740072979, 0.4761041020920793, 0.41673266652664104, 0, 
+              -0.41881375446947644, 0.10799744543151876, -0.9016271906100919, 0,
+              -0.474274467419964, -0.8727321672491286, 0.11576827632019257, 0,
+              0,            0,            0,            1);
+        mesh.setRotationFromMatrix(m);   
+        mesh.position.x = -3.0577506353036266;
+        mesh.position.y = 0.05;
+        mesh.position.z = -1.6131813120564777;
+        markerRoot.add(mesh);
+        
+    //O002 - C004
+    bond_geom = new THREE.CylinderBufferGeometry(0.04, 0.04, 1.2305984562610945, 6, 1);
+    mesh = new THREE.Mesh(bond_geom, bond_mat);
+    m = new THREE.Matrix4();
+    m.set(0.7445830645238727, -0.4916464108311034, 0.4515305822877697, 0,
+          0.4916464108311034, -0.053640696015248235, -0.8691412327394746, 0,
+          0.4515305822877697, 0.8691412327394746, 0.20177623946087908, 0,
+          0,           0,           0,            1);
+    mesh.setRotationFromMatrix(m);
+    mesh.position.x = 0.9647687021915847;
+    mesh.position.y = 1.4877676939481315;
+    mesh.position.z = -1.7531437245965074;
+    markerRoot.add(mesh);
+    
+    //C007 - C008
+    bond_geom = new THREE.CylinderBufferGeometry(0.04, 0.04, 1.381562104016878, 6, 1);
+    mesh = new THREE.Mesh(bond_geom, bond_mat);
+    m = new THREE.Matrix4();
+    m.set(0.9498886637858178, -0.22892716839612687, -0.2128470765158051, 0,
+          0.22892716839612687, 0.045824206440468696, 0.9723643831785658, 0,
+          -0.2128470765158051, -0.9723643831785658, 0.09593554265465087, 0,
+          0,           0,           0,            1);
+    mesh.setRotationFromMatrix(m);
+    mesh.position.x = 0.4851961423066179;
+    mesh.position.y = 1.368041807381506;
+    mesh.position.z = 1.7909701450444702;
+    markerRoot.add(mesh);
+    
+    //C005 - C007
+    bond_geom = new THREE.CylinderBufferGeometry(0.04, 0.04, 1.4005081044428778, 6, 1);
+    mesh = new THREE.Mesh(bond_geom, bond_mat);
+    m = new THREE.Matrix4();
+    m.set(0.11670847554395714, -0.96768991193631, -0.22350697097160505, 0,
+          0.96768991193631, 0.06015255409586462, 0.24486303226996195, 0,
+          -0.22350697097160505, -0.24486303226996195, 0.9434440785519074, 0,
+          0,           0,           0,            1);
+    mesh.setRotationFromMatrix(m);
+    mesh.position.x = 1.320963474651816;
+    mesh.position.y = 1.2942652440920086;
+    mesh.position.z = 2.6341273671783663;
+    markerRoot.add(mesh);
+    
+    //C006 - C00C
+    bond_geom = new THREE.CylinderBufferGeometry(0.04, 0.04, 1.4344229182270578, 6, 1);
+    mesh = new THREE.Mesh(bond_geom, bond_mat);
+    m = new THREE.Matrix4();
+    m.set(0.9663124708389045, 0.18354162786979825, 0.18042361137089524, 0,
+          -0.18354162786979825, 0.0, 0.9830119382992784, 0,
+          0.18042361137089524, -0.9830119382992784, 0.03368752916109552, 0,
+          0,           0,           0,            1);
+    mesh.setRotationFromMatrix(m);
+    mesh.position.x = -0.8865111639620564;
+    mesh.position.y = 1.4547626150935635;
+    mesh.position.z = -0.24873664244524407;
+    markerRoot.add(mesh);
+    
+    //C009 - C00D
+    bond_geom = new THREE.CylinderBufferGeometry(0.04, 0.04, 1.4056041050922654, 6, 1);
+    mesh = new THREE.Mesh(bond_geom, bond_mat);
+    m = new THREE.Matrix4();
+    m.set(0.9417912413301297, 0.2354865447664282, -0.2399486298936138, 0,
+          -0.2354865447664282, -0.0473269996954131, -0.970724596543118, 0,
+          -0.2399486298936138, 0.970724596543118, 0.0108817589744572, 0,
+          0,           0,           0,            1);
+    mesh.setRotationFromMatrix(m);
+    mesh.position.x = 2.8206192940584085;
+    mesh.position.y = 1.2573031181395211;
+    mesh.position.z = 1.1460611888080947;
+    markerRoot.add(mesh);
+    
+    //C006 - C008
+    bond_geom = new THREE.CylinderBufferGeometry(0.04, 0.04, 1.5007223770661278, 6, 1);
+    mesh = new THREE.Mesh(bond_geom, bond_mat);
+    m = new THREE.Matrix4();
+    m.set(0.16591013928074927, 0.8963729303571115, -0.41108319767031015, 0,
+          -0.8963729303571115, -0.03669320523314368, -0.44177955861800955, 0,
+          -0.41108319767031015, 0.44177955861800955, 0.7973966554861072, 0,
+          0,           0,           0,            1);
+    mesh.setRotationFromMatrix(m);
+    mesh.position.x = -0.34554586530299924;
+    mesh.position.y = 1.4272294580037341;
+    mesh.position.z = 0.7877850188226216;
+    markerRoot.add(mesh);
+    
+    //S001 - C00E
+    bond_geom = new THREE.CylinderBufferGeometry(0.04, 0.04, 1.7886952043759754, 6, 1);
+    mesh = new THREE.Mesh(bond_geom, bond_mat);
+    m = new THREE.Matrix4();
+    m.set(-0.3549333480953729, -0.6315899452058661, 0.6892869210456991, 0,
+          0.6315899452058661, -0.7055900502811521, -0.3213048740045695, 0,
+          0.6892869210456991, 0.3213048740045695, 0.6493432978142208, 0,
+          0,           0,           0,            1);
+    mesh.setRotationFromMatrix(m);
+    mesh.position.x = -2.492889682242718;
+    mesh.position.y = 0.6810427695966501;
+    mesh.position.z = -1.9005395556937779;
+    markerRoot.add(mesh);
+    
+    //C004 - C00C
+    bond_geom = new THREE.CylinderBufferGeometry(0.04, 0.04, 1.4416224209599502, 6, 1);
+    mesh = new THREE.Mesh(bond_geom, bond_mat);
+    m = new THREE.Matrix4();
+    m.set(0.033687529161095076, -0.9830119382992785, 0.180423611370895, 0,
+          0.9830119382992785, -2.220446049250313e-16, -0.18354162786979794, 0,
+          0.180423611370895, 0.18354162786979794, 0.9663124708389046, 0,
+          0,           0,           0,            1);
+    mesh.setRotationFromMatrix(m);
+    mesh.position.x = -0.04630698006771661;
+    mesh.position.y = 1.4547626150935637;
+    mesh.position.z = -1.086062931997182;
+    markerRoot.add(mesh);
+    
+    //C009 - C00A
+    bond_geom = new THREE.CylinderBufferGeometry(0.04, 0.04, 1.383123918056868, 6, 1);
+    mesh = new THREE.Mesh(bond_geom, bond_mat);
+    m = new THREE.Matrix4();
+    m.set(0.11983687235673135, -0.9691413231336129, -0.2154163870706834, 0,
+          0.9691413231336129, 0.06711457763525319, 0.23719344270799644, 0,
+          -0.2154163870706834, -0.23719344270799644, 0.9472777052785217, 0,
+          0,           0,           0,            1);
+    mesh.setRotationFromMatrix(m);
+    mesh.position.x = 1.984897595047876;
+    mesh.position.y = 1.3369785194551094;
+    mesh.position.z = 0.29979998799273405;
+    markerRoot.add(mesh);
+    
+    //S001 - C00C
+    bond_geom = new THREE.CylinderBufferGeometry(0.04, 0.04, 1.7087238410212648, 6, 1);
+    mesh = new THREE.Mesh(bond_geom, bond_mat);
+    m = new THREE.Matrix4();
+    m.set(0.5649501989631023, 0.6865683592564347, -0.45766271506370115, 0,
+          -0.6865683592564347, 0.08349920126062527, -0.7222546444688085, 0,
+          -0.45766271506370115, 0.7222546444688085, 0.518549002297523, 0,
+          0,           0,           0,            1);
+    mesh.setRotationFromMatrix(m);
+    mesh.position.x = -1.3414508672056473;
+    mesh.position.y = 1.3834240771434319;
+    mesh.position.z = -1.570830934184983;
+    markerRoot.add(mesh);
+    
+    //C004 - C00A
+    bond_geom = new THREE.CylinderBufferGeometry(0.04, 0.04, 1.5047937289581494, 6, 1);
+    mesh = new THREE.Mesh(bond_geom, bond_mat);
+    m = new THREE.Matrix4();
+    m.set(0.802667140885322, 0.4335592748674179, -0.409575165408526, 0,
+          -0.4335592748674179, -0.04742856477682578, -0.8998760394741318, 0,
+          -0.409575165408526, 0.8998760394741318, 0.14990429433785202, 0,
+          0,           0,           0,            1);
+    mesh.setRotationFromMatrix(m);
+    mesh.position.x = 0.9884676840701194;
+    mesh.position.y = 1.4190775116687373;
+    mesh.position.z = -0.5412978844352914;
+    markerRoot.add(mesh);
+    
+    //C005 - C00D
+    bond_geom = new THREE.CylinderBufferGeometry(0.04, 0.04, 1.389649517595632, 6, 1);
+    mesh = new THREE.Mesh(bond_geom, bond_mat);
+    m = new THREE.Matrix4();
+    m.set(0.48458133211898524, 0.7106305955453025, 0.5100834139988462, 0,
+          -0.7106305955453025, -0.020222054817675916, 0.7032746441994616, 0,
+          0.5100834139988462, -0.7032746441994616, 0.49519661306333895, 0,
+          0,           0,           0,            1);
+    mesh.setRotationFromMatrix(m);
+    mesh.position.x = 2.4923559889231375;
+    mesh.position.y = 1.2380923899738225;
+    mesh.position.z = 2.3169410627401255;
+    markerRoot.add(mesh);
+    
+    //S001 - C00B
+    bond_geom = new THREE.CylinderBufferGeometry(0.04, 0.04, 1.7949917062598297, 6, 1);
+    mesh = new THREE.Mesh(bond_geom, bond_mat);
+    m = new THREE.Matrix4();
+    m.set(0.8045137534782731, -0.5934696075443189, 0.023482874302191346, 0,
+          0.5934696075443189, 0.8016928625189124, -0.07129080661224495, 0,
+          0.023482874302191346, 0.07129080661224495, 0.9971791090406392, 0,
+          0,           0,           0,            1);
+    mesh.setRotationFromMatrix(m);
+    mesh.position.x = -2.460665240911473;
+    mesh.position.y = 2.031601558787875;
+    mesh.position.z = -2.1239145960303016;
+    markerRoot.add(mesh);
+    
+    //O003 - C006
+    bond_geom = new THREE.CylinderBufferGeometry(0.04, 0.04, 1.2359452354314038, 6, 1);
+    mesh = new THREE.Mesh(bond_geom, bond_mat);
+    m = new THREE.Matrix4();
+    m.set(0.2180456125008594, 0.8772104605546702, 0.4277358048639234, 0,
+          -0.8772104605546702, -0.01592956774939469, 0.47984169969353513, 0,
+          0.4277358048639234, -0.47984169969353513, 0.766024819749746, 0,
+          0,           0,           0,            1);
+    mesh.setRotationFromMatrix(m);
+    mesh.position.x = -1.5602413672911928;
+    mesh.position.y = 1.4646066517747367;
+    mesh.position.z = 0.7528198153971652;
+    markerRoot.add(mesh);
+    
+    //C008 - C00A
+    bond_geom = new THREE.CylinderBufferGeometry(0.04, 0.04, 1.3938991509964707, 6, 1);
+    mesh = new THREE.Mesh(bond_geom, bond_mat);
+    m = new THREE.Matrix4();
+    m.set(0.492044527842761, 0.708529544803531, 0.5058439154131398, 0,
+          -0.708529544803531, -0.011696608508828366, 0.7055842072282319, 0,
+          0.5058439154131398, -0.7055842072282319, 0.49625886364841076, 0,
+          0,           0,           0,            1);
+    mesh.setRotationFromMatrix(m);
+    mesh.position.x = 0.8208669575674071;
+    mesh.position.y = 1.3915443545789077;
+    mesh.position.z = 0.6275226397908685;
+    markerRoot.add(mesh);
+    
+
+
+        ////////////////////////////////////////////////////////////////////////////////
+        //          Entries for Gruppe3_1_a.cif
+        ////////////////////////////////////////////////////////////////////////////////
+        var markerRoot = new THREE.Group
+        scene.add(markerRoot)
+        // init controls for camera
+        var markerControls = new THREEx.ArMarkerControls(arToolkitContext, markerRoot, {
+            // size of the marker in meter
+            size: 5,
+            // type of marker - ['pattern', 'barcode', 'unknown' ]
+            type: 'barcode',
+            // url of the pattern - IIF type='pattern'
+            // patternUrl: null,
+            // value of the barcode - IIF type='barcode'
+            barcodeValue: 1,
+            // change matrix mode - [modelViewMatrix, cameraTransformMatrix]
+            changeMatrixMode: "modelViewMatrix",
+            //changeMatrixMode: "cameraTransformMatrix",
+            // turn on/off camera smoothing
+            smooth: true,
+            // number of matrices to smooth tracking over, more = smoother but slower follow
+            smoothCount: 5,
+            // distance tolerance for smoothing, if smoothThreshold # of matrices are under tolerance, tracking will stay still
+            smoothTolerance: 0.01,
+            // threshold for smoothing, will keep still unless enough matrices are over tolerance
+            smoothThreshold: 2
+        })
+    
+    //N1
+        mat = new THREE.MeshPhysicalMaterial({color:"#3050f8"});
+        mesh = new THREE.Mesh(sphere_geom, mat);
+        mesh.scale.x = 0.16179628162597884;
+        mesh.scale.y = 0.14617177750844845;
+        mesh.scale.z = 0.1332924780774503;
+        m = new THREE.Matrix4();
+        m.set(0.5804481388877862, 0.764919553299147, 0.2792454745243685, 0, 
+              0.7432307029050639, -0.6377752987157687, 0.20211578515112283, 0,
+              0.33269818202230905, 0.09022607898299072, -0.9387071824325227, 0,
+              0,            0,            0,            1);
+        mesh.setRotationFromMatrix(m);
+        mesh.position.x = 0.9375219684284191;
+        mesh.position.y = 1.6677033909002976;
+        mesh.position.z = -0.24522262317384164;
+        markerRoot.add(mesh);
+
+        mat = new THREE.MeshPhysicalMaterial({color: "#ffffff"});
+        mesh = new THREE.Mesh(marker_geom, mat);
+        mesh.scale.x = 0.16979628162597885;
+        mesh.scale.y = 0.15417177750844846;
+        mesh.scale.z = 0.1412924780774503;
+        mesh.setRotationFromMatrix(m);
+        mesh.position.x = 0.9375219684284191;
+        mesh.position.y = 1.6677033909002976;
+        mesh.position.z = -0.24522262317384164;
+        markerRoot.add(mesh);
+
+        mat = new THREE.MeshPhysicalMaterial({color: "#ffffff"});
+        mesh = new THREE.Mesh(marker_geom, mat);
+        mesh.scale.x = 0.16979628162597885;
+        mesh.scale.y = 0.1412924780774503;
+        mesh.scale.z = 0.15417177750844846;
+        m = new THREE.Matrix4();
+        m.set(0.5804481388877862, -0.2792454745243685, 0.764919553299147, 0, 
+              0.7432307029050639, -0.20211578515112283, -0.6377752987157687, 0,
+              0.33269818202230905, 0.9387071824325227, 0.09022607898299072, 0,
+              0,            0,            0,            1);
+        mesh.setRotationFromMatrix(m);    
+        mesh.position.x = 0.9375219684284191;
+        mesh.position.y = 1.6677033909002976;
+        mesh.position.z = -0.24522262317384164;
+        markerRoot.add(mesh);
+
+        mat = new THREE.MeshPhysicalMaterial({color: "#ffffff"});
+        mesh = new THREE.Mesh(marker_geom, mat);
+        mesh.scale.x = 0.15417177750844846;
+        mesh.scale.y = 0.16979628162597885;
+        mesh.scale.z = 0.1412924780774503;
+        m = new THREE.Matrix4();
+        m.set(-0.764919553299147, 0.5804481388877862, 0.2792454745243685, 0, 
+              0.6377752987157687, 0.7432307029050639, 0.20211578515112283, 0,
+              -0.09022607898299072, 0.33269818202230905, -0.9387071824325227, 0,
+              0,            0,            0,            1);
+        mesh.setRotationFromMatrix(m);   
+        mesh.position.x = 0.9375219684284191;
+        mesh.position.y = 1.6677033909002976;
+        mesh.position.z = -0.24522262317384164;
+        markerRoot.add(mesh);
+        
+    //N4
+        mat = new THREE.MeshPhysicalMaterial({color:"#3050f8"});
+        mesh = new THREE.Mesh(sphere_geom, mat);
+        mesh.scale.x = 0.16891933856206712;
+        mesh.scale.y = 0.13872536606876226;
+        mesh.scale.z = 0.1442563685555742;
+        m = new THREE.Matrix4();
+        m.set(0.6748587309153142, -0.5364498672900677, -0.5067417815730604, 0, 
+              -0.5888202176138054, -0.8053636871121113, 0.06841113074944173, 0,
+              -0.4448105716331416, 0.25221195722180617, -0.8593792434063925, 0,
+              0,            0,            0,            1);
+        mesh.setRotationFromMatrix(m);
+        mesh.position.x = -1.8402276721825424;
+        mesh.position.y = 1.1657122606919867;
+        mesh.position.z = 0.47294315782293206;
+        markerRoot.add(mesh);
+
+        mat = new THREE.MeshPhysicalMaterial({color: "#ffffff"});
+        mesh = new THREE.Mesh(marker_geom, mat);
+        mesh.scale.x = 0.17691933856206712;
+        mesh.scale.y = 0.14672536606876227;
+        mesh.scale.z = 0.1522563685555742;
+        mesh.setRotationFromMatrix(m);
+        mesh.position.x = -1.8402276721825424;
+        mesh.position.y = 1.1657122606919867;
+        mesh.position.z = 0.47294315782293206;
+        markerRoot.add(mesh);
+
+        mat = new THREE.MeshPhysicalMaterial({color: "#ffffff"});
+        mesh = new THREE.Mesh(marker_geom, mat);
+        mesh.scale.x = 0.17691933856206712;
+        mesh.scale.y = 0.1522563685555742;
+        mesh.scale.z = 0.14672536606876227;
+        m = new THREE.Matrix4();
+        m.set(0.6748587309153142, 0.5067417815730604, -0.5364498672900677, 0, 
+              -0.5888202176138054, -0.06841113074944173, -0.8053636871121113, 0,
+              -0.4448105716331416, 0.8593792434063925, 0.25221195722180617, 0,
+              0,            0,            0,            1);
+        mesh.setRotationFromMatrix(m);    
+        mesh.position.x = -1.8402276721825424;
+        mesh.position.y = 1.1657122606919867;
+        mesh.position.z = 0.47294315782293206;
+        markerRoot.add(mesh);
+
+        mat = new THREE.MeshPhysicalMaterial({color: "#ffffff"});
+        mesh = new THREE.Mesh(marker_geom, mat);
+        mesh.scale.x = 0.14672536606876227;
+        mesh.scale.y = 0.17691933856206712;
+        mesh.scale.z = 0.1522563685555742;
+        m = new THREE.Matrix4();
+        m.set(0.5364498672900677, 0.6748587309153142, -0.5067417815730604, 0, 
+              0.8053636871121113, -0.5888202176138054, 0.06841113074944173, 0,
+              -0.25221195722180617, -0.4448105716331416, -0.8593792434063925, 0,
+              0,            0,            0,            1);
+        mesh.setRotationFromMatrix(m);   
+        mesh.position.x = -1.8402276721825424;
+        mesh.position.y = 1.1657122606919867;
+        mesh.position.z = 0.47294315782293206;
+        markerRoot.add(mesh);
+        
+    //H1
+        mat = new THREE.MeshPhysicalMaterial({color:"#ffffff"});
+        mesh = new THREE.Mesh(sphere_geom, mat);
+        mesh.scale.x = 0.15;
+        mesh.scale.y = 0.15;
+        mesh.scale.z = 0.15;
+        mesh.position.x = 0.936039208725322;
+        mesh.position.y = 2.56959688934412;
+        mesh.position.z = -0.2672675999610497;
+        markerRoot.add(mesh);
+        
+    //H2A
+        mat = new THREE.MeshPhysicalMaterial({color:"#ffffff"});
+        mesh = new THREE.Mesh(sphere_geom, mat);
+        mesh.scale.x = 0.15;
+        mesh.scale.y = 0.15;
+        mesh.scale.z = 0.15;
+        mesh.position.x = -0.05231499345897818;
+        mesh.position.y = 0.21667468825268216;
+        mesh.position.z = -1.3149843108421282;
+        markerRoot.add(mesh);
+        
+    //H2AB
+        mat = new THREE.MeshPhysicalMaterial({color:"#ffffff"});
+        mesh = new THREE.Mesh(sphere_geom, mat);
+        mesh.scale.x = 0.15;
+        mesh.scale.y = 0.15;
+        mesh.scale.z = 0.15;
+        mesh.position.x = 0.16252623230511795;
+        mesh.position.y = 1.5699794973573746;
+        mesh.position.z = -2.147628887413595;
+        markerRoot.add(mesh);
+        
+    //H3A
+        mat = new THREE.MeshPhysicalMaterial({color:"#ffffff"});
+        mesh = new THREE.Mesh(sphere_geom, mat);
+        mesh.scale.x = 0.15;
+        mesh.scale.y = 0.15;
+        mesh.scale.z = 0.15;
+        mesh.position.x = -1.481613313744859;
+        mesh.position.y = 2.6573747249287294;
+        mesh.position.z = -0.8595925278451841;
+        markerRoot.add(mesh);
+        
+    //H3AB
+        mat = new THREE.MeshPhysicalMaterial({color:"#ffffff"});
+        mesh = new THREE.Mesh(sphere_geom, mat);
+        mesh.scale.x = 0.15;
+        mesh.scale.y = 0.15;
+        mesh.scale.z = 0.15;
+        mesh.position.x = -2.110340376637278;
+        mesh.position.y = 1.3475276119257849;
+        mesh.position.z = -1.5328648440457326;
+        markerRoot.add(mesh);
+        
+    //H5A
+        mat = new THREE.MeshPhysicalMaterial({color:"#ffffff"});
+        mesh = new THREE.Mesh(sphere_geom, mat);
+        mesh.scale.x = 0.15;
+        mesh.scale.y = 0.15;
+        mesh.scale.z = 0.15;
+        mesh.position.x = -1.1077993490152849;
+        mesh.position.y = 1.3547865761146773;
+        mesh.position.z = 2.357954703513597;
+        markerRoot.add(mesh);
+        
+    //H5AB
+        mat = new THREE.MeshPhysicalMaterial({color:"#ffffff"});
+        mesh = new THREE.Mesh(sphere_geom, mat);
+        mesh.scale.x = 0.15;
+        mesh.scale.y = 0.15;
+        mesh.scale.z = 0.15;
+        mesh.position.x = -0.8735241646126266;
+        mesh.position.y = 2.657636753400194;
+        mesh.position.z = 1.4553931752129585;
+        markerRoot.add(mesh);
+        
+    //H7A
+        mat = new THREE.MeshPhysicalMaterial({color:"#ffffff"});
+        mesh = new THREE.Mesh(sphere_geom, mat);
+        mesh.scale.x = 0.15;
+        mesh.scale.y = 0.15;
+        mesh.scale.z = 0.15;
+        mesh.position.x = 2.3844038429813414;
+        mesh.position.y = 0.2600458463606829;
+        mesh.position.z = -0.6381658290772121;
+        markerRoot.add(mesh);
+        
+    //H7AB
+        mat = new THREE.MeshPhysicalMaterial({color:"#ffffff"});
+        mesh = new THREE.Mesh(sphere_geom, mat);
+        mesh.scale.x = 0.15;
+        mesh.scale.y = 0.15;
+        mesh.scale.z = 0.15;
+        mesh.position.x = 2.950517276245444;
+        mesh.position.y = 1.5326966979309224;
+        mesh.position.z = 0.1533392752730671;
+        markerRoot.add(mesh);
+        
+    //H6A
+        mat = new THREE.MeshPhysicalMaterial({color:"#ffffff"});
+        mesh = new THREE.Mesh(sphere_geom, mat);
+        mesh.scale.x = 0.15;
+        mesh.scale.y = 0.15;
+        mesh.scale.z = 0.15;
+        mesh.position.x = 1.1811815290676488;
+        mesh.position.y = 1.5269574796267884;
+        mesh.position.z = 1.7922243764789672;
+        markerRoot.add(mesh);
+        
+    //H6AB
+        mat = new THREE.MeshPhysicalMaterial({color:"#ffffff"});
+        mesh = new THREE.Mesh(sphere_geom, mat);
+        mesh.scale.x = 0.15;
+        mesh.scale.y = 0.15;
+        mesh.scale.z = 0.15;
+        mesh.position.x = 0.5671828814174755;
+        mesh.position.y = 0.195487883486328;
+        mesh.position.z = 1.142613080683065;
+        markerRoot.add(mesh);
+        
+    //H8A
+        mat = new THREE.MeshPhysicalMaterial({color:"#ffffff"});
+        mesh = new THREE.Mesh(sphere_geom, mat);
+        mesh.scale.x = 0.15;
+        mesh.scale.y = 0.15;
+        mesh.scale.z = 0.15;
+        mesh.position.x = 2.4641252216017007;
+        mesh.position.y = 2.7853292182065914;
+        mesh.position.z = -1.9617477935606984;
+        markerRoot.add(mesh);
+        
+    //H8AB
+        mat = new THREE.MeshPhysicalMaterial({color:"#ffffff"});
+        mesh = new THREE.Mesh(sphere_geom, mat);
+        mesh.scale.x = 0.15;
+        mesh.scale.y = 0.15;
+        mesh.scale.z = 0.15;
+        mesh.position.x = 2.4384117120913613;
+        mesh.position.y = 1.3358745234715559;
+        mesh.position.z = -2.6452109240889925;
+        markerRoot.add(mesh);
+        
+    //H13A
+        mat = new THREE.MeshPhysicalMaterial({color:"#ffffff"});
+        mesh = new THREE.Mesh(sphere_geom, mat);
+        mesh.scale.x = 0.15;
+        mesh.scale.y = 0.15;
+        mesh.scale.z = 0.15;
+        mesh.position.x = -3.7902577071925716;
+        mesh.position.y = 1.4129583259621852;
+        mesh.position.z = -0.002450084012082958;
+        markerRoot.add(mesh);
+        
+    //H13B
+        mat = new THREE.MeshPhysicalMaterial({color:"#ffffff"});
+        mesh = new THREE.Mesh(sphere_geom, mat);
+        mesh.scale.x = 0.15;
+        mesh.scale.y = 0.15;
+        mesh.scale.z = 0.15;
+        mesh.position.x = -3.1953139341424444;
+        mesh.position.y = 2.6143564992868584;
+        mesh.position.z = 0.8664534315842616;
+        markerRoot.add(mesh);
+        
+    //H14A
+        mat = new THREE.MeshPhysicalMaterial({color:"#ffffff"});
+        mesh = new THREE.Mesh(sphere_geom, mat);
+        mesh.scale.x = 0.15;
+        mesh.scale.y = 0.15;
+        mesh.scale.z = 0.15;
+        mesh.position.x = -4.80503834644817;
+        mesh.position.y = 1.1583157301717442;
+        mesh.position.z = 1.9939133237323188;
+        markerRoot.add(mesh);
+        
+    //H14B
+        mat = new THREE.MeshPhysicalMaterial({color:"#ffffff"});
+        mesh = new THREE.Mesh(sphere_geom, mat);
+        mesh.scale.x = 0.15;
+        mesh.scale.y = 0.15;
+        mesh.scale.z = 0.15;
+        mesh.position.x = -3.654357313691082;
+        mesh.position.y = 0.05;
+        mesh.position.z = 2.0246380749855546;
+        markerRoot.add(mesh);
+        
+    //H15
+        mat = new THREE.MeshPhysicalMaterial({color:"#ffffff"});
+        mesh = new THREE.Mesh(sphere_geom, mat);
+        mesh.scale.x = 0.15;
+        mesh.scale.y = 0.15;
+        mesh.scale.z = 0.15;
+        mesh.position.x = -3.6013024369003426;
+        mesh.position.y = 2.3365726963359825;
+        mesh.position.z = 3.3282196071571386;
+        markerRoot.add(mesh);
+        
+    //C2
+        mat = new THREE.MeshPhysicalMaterial({color:"#000000"});
+        mesh = new THREE.Mesh(sphere_geom, mat);
+        mesh.scale.x = 0.135630517034754;
+        mesh.scale.y = 0.18701506761670142;
+        mesh.scale.z = 0.16479286190004078;
+        m = new THREE.Matrix4();
+        m.set(0.7553275758567038, 0.6553299052821735, -0.0047925351633840395, 0, 
+              0.6541025766289794, -0.7543231804878131, -0.05609241148390977, 0,
+              -0.040374155071842846, 0.03923333559114383, -0.9984140789174736, 0,
+              0,            0,            0,            1);
+        mesh.setRotationFromMatrix(m);
+        mesh.position.x = -0.06924987010539975;
+        mesh.position.y = 1.2048215039728385;
+        mesh.position.z = -1.2569846399933295;
+        markerRoot.add(mesh);
+
+        mat = new THREE.MeshPhysicalMaterial({color: "#ffffff"});
+        mesh = new THREE.Mesh(marker_geom, mat);
+        mesh.scale.x = 0.14363051703475402;
+        mesh.scale.y = 0.19501506761670143;
+        mesh.scale.z = 0.17279286190004078;
+        mesh.setRotationFromMatrix(m);
+        mesh.position.x = -0.06924987010539975;
+        mesh.position.y = 1.2048215039728385;
+        mesh.position.z = -1.2569846399933295;
+        markerRoot.add(mesh);
+
+        mat = new THREE.MeshPhysicalMaterial({color: "#ffffff"});
+        mesh = new THREE.Mesh(marker_geom, mat);
+        mesh.scale.x = 0.14363051703475402;
+        mesh.scale.y = 0.17279286190004078;
+        mesh.scale.z = 0.19501506761670143;
+        m = new THREE.Matrix4();
+        m.set(0.7553275758567038, 0.0047925351633840395, 0.6553299052821735, 0, 
+              0.6541025766289794, 0.05609241148390977, -0.7543231804878131, 0,
+              -0.040374155071842846, 0.9984140789174736, 0.03923333559114383, 0,
+              0,            0,            0,            1);
+        mesh.setRotationFromMatrix(m);    
+        mesh.position.x = -0.06924987010539975;
+        mesh.position.y = 1.2048215039728385;
+        mesh.position.z = -1.2569846399933295;
+        markerRoot.add(mesh);
+
+        mat = new THREE.MeshPhysicalMaterial({color: "#ffffff"});
+        mesh = new THREE.Mesh(marker_geom, mat);
+        mesh.scale.x = 0.19501506761670143;
+        mesh.scale.y = 0.14363051703475402;
+        mesh.scale.z = 0.17279286190004078;
+        m = new THREE.Matrix4();
+        m.set(-0.6553299052821735, 0.7553275758567038, -0.0047925351633840395, 0, 
+              0.7543231804878131, 0.6541025766289794, -0.05609241148390977, 0,
+              -0.03923333559114383, -0.040374155071842846, -0.9984140789174736, 0,
+              0,            0,            0,            1);
+        mesh.setRotationFromMatrix(m);   
+        mesh.position.x = -0.06924987010539975;
+        mesh.position.y = 1.2048215039728385;
+        mesh.position.z = -1.2569846399933295;
+        markerRoot.add(mesh);
+        
+    //C3
+        mat = new THREE.MeshPhysicalMaterial({color:"#000000"});
+        mesh = new THREE.Mesh(sphere_geom, mat);
+        mesh.scale.x = 0.18376773429662985;
+        mesh.scale.y = 0.15233657423104172;
+        mesh.scale.z = 0.16307396476149588;
+        m = new THREE.Matrix4();
+        m.set(-0.9380238010643739, 0.3305209644412935, -0.10424605844606806, 0, 
+              0.2984906766475064, 0.9233246372905547, 0.24160904396727087, 0,
+              0.17610980833348702, 0.19551855727030654, -0.9647579122099388, 0,
+              0,            0,            0,            1);
+        mesh.setRotationFromMatrix(m);
+        mesh.position.x = -1.4557556523265895;
+        mesh.position.y = 1.6677033909002972;
+        mesh.position.z = -0.8625716049339595;
+        markerRoot.add(mesh);
+
+        mat = new THREE.MeshPhysicalMaterial({color: "#ffffff"});
+        mesh = new THREE.Mesh(marker_geom, mat);
+        mesh.scale.x = 0.19176773429662985;
+        mesh.scale.y = 0.16033657423104172;
+        mesh.scale.z = 0.1710739647614959;
+        mesh.setRotationFromMatrix(m);
+        mesh.position.x = -1.4557556523265895;
+        mesh.position.y = 1.6677033909002972;
+        mesh.position.z = -0.8625716049339595;
+        markerRoot.add(mesh);
+
+        mat = new THREE.MeshPhysicalMaterial({color: "#ffffff"});
+        mesh = new THREE.Mesh(marker_geom, mat);
+        mesh.scale.x = 0.19176773429662985;
+        mesh.scale.y = 0.1710739647614959;
+        mesh.scale.z = 0.16033657423104172;
+        m = new THREE.Matrix4();
+        m.set(-0.9380238010643739, 0.10424605844606806, 0.3305209644412935, 0, 
+              0.2984906766475064, -0.24160904396727087, 0.9233246372905547, 0,
+              0.17610980833348702, 0.9647579122099388, 0.19551855727030654, 0,
+              0,            0,            0,            1);
+        mesh.setRotationFromMatrix(m);    
+        mesh.position.x = -1.4557556523265895;
+        mesh.position.y = 1.6677033909002972;
+        mesh.position.z = -0.8625716049339595;
+        markerRoot.add(mesh);
+
+        mat = new THREE.MeshPhysicalMaterial({color: "#ffffff"});
+        mesh = new THREE.Mesh(marker_geom, mat);
+        mesh.scale.x = 0.16033657423104172;
+        mesh.scale.y = 0.19176773429662985;
+        mesh.scale.z = 0.1710739647614959;
+        m = new THREE.Matrix4();
+        m.set(-0.3305209644412935, -0.9380238010643739, -0.10424605844606806, 0, 
+              -0.9233246372905547, 0.2984906766475064, 0.24160904396727087, 0,
+              -0.19551855727030654, 0.17610980833348702, -0.9647579122099388, 0,
+              0,            0,            0,            1);
+        mesh.setRotationFromMatrix(m);   
+        mesh.position.x = -1.4557556523265895;
+        mesh.position.y = 1.6677033909002972;
+        mesh.position.z = -0.8625716049339595;
+        markerRoot.add(mesh);
+        
+    //C5
+        mat = new THREE.MeshPhysicalMaterial({color:"#000000"});
+        mesh = new THREE.Mesh(sphere_geom, mat);
+        mesh.scale.x = 0.18085798580833856;
+        mesh.scale.y = 0.14514854460172857;
+        mesh.scale.z = 0.1606639006415281;
+        m = new THREE.Matrix4();
+        m.set(-0.6327536543506284, 0.771516749810459, -0.066217200694615, 0, 
+              0.7696593879111046, 0.6172133998483679, -0.16331578505435954, 0,
+              -0.08513072010871789, -0.15430334996209194, -0.9843491436905135, 0,
+              0,            0,            0,            1);
+        mesh.setRotationFromMatrix(m);
+        mesh.position.x = -0.858644327510392;
+        mesh.position.y = 1.6677033909002967;
+        mesh.position.z = 1.4522506641619102;
+        markerRoot.add(mesh);
+
+        mat = new THREE.MeshPhysicalMaterial({color: "#ffffff"});
+        mesh = new THREE.Mesh(marker_geom, mat);
+        mesh.scale.x = 0.18885798580833857;
+        mesh.scale.y = 0.15314854460172858;
+        mesh.scale.z = 0.16866390064152811;
+        mesh.setRotationFromMatrix(m);
+        mesh.position.x = -0.858644327510392;
+        mesh.position.y = 1.6677033909002967;
+        mesh.position.z = 1.4522506641619102;
+        markerRoot.add(mesh);
+
+        mat = new THREE.MeshPhysicalMaterial({color: "#ffffff"});
+        mesh = new THREE.Mesh(marker_geom, mat);
+        mesh.scale.x = 0.18885798580833857;
+        mesh.scale.y = 0.16866390064152811;
+        mesh.scale.z = 0.15314854460172858;
+        m = new THREE.Matrix4();
+        m.set(-0.6327536543506284, 0.066217200694615, 0.771516749810459, 0, 
+              0.7696593879111046, 0.16331578505435954, 0.6172133998483679, 0,
+              -0.08513072010871789, 0.9843491436905135, -0.15430334996209194, 0,
+              0,            0,            0,            1);
+        mesh.setRotationFromMatrix(m);    
+        mesh.position.x = -0.858644327510392;
+        mesh.position.y = 1.6677033909002967;
+        mesh.position.z = 1.4522506641619102;
+        markerRoot.add(mesh);
+
+        mat = new THREE.MeshPhysicalMaterial({color: "#ffffff"});
+        mesh = new THREE.Mesh(marker_geom, mat);
+        mesh.scale.x = 0.15314854460172858;
+        mesh.scale.y = 0.18885798580833857;
+        mesh.scale.z = 0.16866390064152811;
+        m = new THREE.Matrix4();
+        m.set(-0.771516749810459, -0.6327536543506284, -0.066217200694615, 0, 
+              -0.6172133998483679, 0.7696593879111046, -0.16331578505435954, 0,
+              0.15430334996209194, -0.08513072010871789, -0.9843491436905135, 0,
+              0,            0,            0,            1);
+        mesh.setRotationFromMatrix(m);   
+        mesh.position.x = -0.858644327510392;
+        mesh.position.y = 1.6677033909002967;
+        mesh.position.z = 1.4522506641619102;
+        markerRoot.add(mesh);
+        
+    //C7
+        mat = new THREE.MeshPhysicalMaterial({color:"#000000"});
+        mesh = new THREE.Mesh(sphere_geom, mat);
+        mesh.scale.x = 0.12802660098146645;
+        mesh.scale.y = 0.1894875871408732;
+        mesh.scale.z = 0.17881846593867867;
+        m = new THREE.Matrix4();
+        m.set(0.34835260488999537, -0.9288309411578812, 0.12618853123053125, 0, 
+              -0.49119432364960364, -0.2955384968101628, -0.8193809451760503, 0,
+              0.7983599433092587, 0.22345039639918654, -0.5591880911359641, 0,
+              0,            0,            0,            1);
+        mesh.setRotationFromMatrix(m);
+        mesh.position.x = 2.3429080268031477;
+        mesh.position.y = 1.2468149758590181;
+        mesh.position.z = -0.57450573662531;
+        markerRoot.add(mesh);
+
+        mat = new THREE.MeshPhysicalMaterial({color: "#ffffff"});
+        mesh = new THREE.Mesh(marker_geom, mat);
+        mesh.scale.x = 0.13602660098146646;
+        mesh.scale.y = 0.1974875871408732;
+        mesh.scale.z = 0.18681846593867868;
+        mesh.setRotationFromMatrix(m);
+        mesh.position.x = 2.3429080268031477;
+        mesh.position.y = 1.2468149758590181;
+        mesh.position.z = -0.57450573662531;
+        markerRoot.add(mesh);
+
+        mat = new THREE.MeshPhysicalMaterial({color: "#ffffff"});
+        mesh = new THREE.Mesh(marker_geom, mat);
+        mesh.scale.x = 0.13602660098146646;
+        mesh.scale.y = 0.18681846593867868;
+        mesh.scale.z = 0.1974875871408732;
+        m = new THREE.Matrix4();
+        m.set(0.34835260488999537, -0.12618853123053125, -0.9288309411578812, 0, 
+              -0.49119432364960364, 0.8193809451760503, -0.2955384968101628, 0,
+              0.7983599433092587, 0.5591880911359641, 0.22345039639918654, 0,
+              0,            0,            0,            1);
+        mesh.setRotationFromMatrix(m);    
+        mesh.position.x = 2.3429080268031477;
+        mesh.position.y = 1.2468149758590181;
+        mesh.position.z = -0.57450573662531;
+        markerRoot.add(mesh);
+
+        mat = new THREE.MeshPhysicalMaterial({color: "#ffffff"});
+        mesh = new THREE.Mesh(marker_geom, mat);
+        mesh.scale.x = 0.1974875871408732;
+        mesh.scale.y = 0.13602660098146646;
+        mesh.scale.z = 0.18681846593867868;
+        m = new THREE.Matrix4();
+        m.set(0.9288309411578812, 0.34835260488999537, 0.12618853123053125, 0, 
+              0.2955384968101628, -0.49119432364960364, -0.8193809451760503, 0,
+              -0.22345039639918654, 0.7983599433092587, -0.5591880911359641, 0,
+              0,            0,            0,            1);
+        mesh.setRotationFromMatrix(m);   
+        mesh.position.x = 2.3429080268031477;
+        mesh.position.y = 1.2468149758590181;
+        mesh.position.z = -0.57450573662531;
+        markerRoot.add(mesh);
+        
+    //C6
+        mat = new THREE.MeshPhysicalMaterial({color:"#000000"});
+        mesh = new THREE.Mesh(sphere_geom, mat);
+        mesh.scale.x = 0.1881901468774432;
+        mesh.scale.y = 0.14050161960796628;
+        mesh.scale.z = 0.16074483974854284;
+        m = new THREE.Matrix4();
+        m.set(-0.9438555320872563, 0.26471318580201575, 0.1976452979729841, 0, 
+              0.29828095627154894, 0.9400342464135499, 0.16542093789916307, 0,
+              -0.14200424526757063, 0.21508729584114503, -0.9662154260276181, 0,
+              0,            0,            0,            1);
+        mesh.setRotationFromMatrix(m);
+        mesh.position.x = 0.5411520555313943;
+        mesh.position.y = 1.184833669226459;
+        mesh.position.z = 1.1187323476618014;
+        markerRoot.add(mesh);
+
+        mat = new THREE.MeshPhysicalMaterial({color: "#ffffff"});
+        mesh = new THREE.Mesh(marker_geom, mat);
+        mesh.scale.x = 0.1961901468774432;
+        mesh.scale.y = 0.1485016196079663;
+        mesh.scale.z = 0.16874483974854285;
+        mesh.setRotationFromMatrix(m);
+        mesh.position.x = 0.5411520555313943;
+        mesh.position.y = 1.184833669226459;
+        mesh.position.z = 1.1187323476618014;
+        markerRoot.add(mesh);
+
+        mat = new THREE.MeshPhysicalMaterial({color: "#ffffff"});
+        mesh = new THREE.Mesh(marker_geom, mat);
+        mesh.scale.x = 0.1961901468774432;
+        mesh.scale.y = 0.16874483974854285;
+        mesh.scale.z = 0.1485016196079663;
+        m = new THREE.Matrix4();
+        m.set(-0.9438555320872563, -0.1976452979729841, 0.26471318580201575, 0, 
+              0.29828095627154894, -0.16542093789916307, 0.9400342464135499, 0,
+              -0.14200424526757063, 0.9662154260276181, 0.21508729584114503, 0,
+              0,            0,            0,            1);
+        mesh.setRotationFromMatrix(m);    
+        mesh.position.x = 0.5411520555313943;
+        mesh.position.y = 1.184833669226459;
+        mesh.position.z = 1.1187323476618014;
+        markerRoot.add(mesh);
+
+        mat = new THREE.MeshPhysicalMaterial({color: "#ffffff"});
+        mesh = new THREE.Mesh(marker_geom, mat);
+        mesh.scale.x = 0.1485016196079663;
+        mesh.scale.y = 0.1961901468774432;
+        mesh.scale.z = 0.16874483974854285;
+        m = new THREE.Matrix4();
+        m.set(-0.26471318580201575, -0.9438555320872563, 0.1976452979729841, 0, 
+              -0.9400342464135499, 0.29828095627154894, 0.16542093789916307, 0,
+              -0.21508729584114503, -0.14200424526757063, -0.9662154260276181, 0,
+              0,            0,            0,            1);
+        mesh.setRotationFromMatrix(m);   
+        mesh.position.x = 0.5411520555313943;
+        mesh.position.y = 1.184833669226459;
+        mesh.position.z = 1.1187323476618014;
+        markerRoot.add(mesh);
+        
+    //C8
+        mat = new THREE.MeshPhysicalMaterial({color:"#000000"});
+        mesh = new THREE.Mesh(sphere_geom, mat);
+        mesh.scale.x = 0.13334912220785985;
+        mesh.scale.y = 0.16959316376932979;
+        mesh.scale.z = 0.17456168081541426;
+        m = new THREE.Matrix4();
+        m.set(-0.19227995225280864, 0.7552906668723188, 0.6265496217357583, 0, 
+              0.4337045829984984, 0.638130278573044, -0.6361525620905654, 0,
+              -0.8803003775119922, 0.14941805815849923, -0.45027268321361347, 0,
+              0,            0,            0,            1);
+        mesh.setRotationFromMatrix(m);
+        mesh.position.x = 2.8060600280383476;
+        mesh.position.y = 1.8590577792310747;
+        mesh.position.z = -1.8893480170561427;
+        markerRoot.add(mesh);
+
+        mat = new THREE.MeshPhysicalMaterial({color: "#ffffff"});
+        mesh = new THREE.Mesh(marker_geom, mat);
+        mesh.scale.x = 0.14134912220785986;
+        mesh.scale.y = 0.1775931637693298;
+        mesh.scale.z = 0.18256168081541427;
+        mesh.setRotationFromMatrix(m);
+        mesh.position.x = 2.8060600280383476;
+        mesh.position.y = 1.8590577792310747;
+        mesh.position.z = -1.8893480170561427;
+        markerRoot.add(mesh);
+
+        mat = new THREE.MeshPhysicalMaterial({color: "#ffffff"});
+        mesh = new THREE.Mesh(marker_geom, mat);
+        mesh.scale.x = 0.14134912220785986;
+        mesh.scale.y = 0.18256168081541427;
+        mesh.scale.z = 0.1775931637693298;
+        m = new THREE.Matrix4();
+        m.set(-0.19227995225280864, -0.6265496217357583, 0.7552906668723188, 0, 
+              0.4337045829984984, 0.6361525620905654, 0.638130278573044, 0,
+              -0.8803003775119922, 0.45027268321361347, 0.14941805815849923, 0,
+              0,            0,            0,            1);
+        mesh.setRotationFromMatrix(m);    
+        mesh.position.x = 2.8060600280383476;
+        mesh.position.y = 1.8590577792310747;
+        mesh.position.z = -1.8893480170561427;
+        markerRoot.add(mesh);
+
+        mat = new THREE.MeshPhysicalMaterial({color: "#ffffff"});
+        mesh = new THREE.Mesh(marker_geom, mat);
+        mesh.scale.x = 0.1775931637693298;
+        mesh.scale.y = 0.14134912220785986;
+        mesh.scale.z = 0.18256168081541427;
+        m = new THREE.Matrix4();
+        m.set(-0.7552906668723188, -0.19227995225280864, 0.6265496217357583, 0, 
+              -0.638130278573044, 0.4337045829984984, -0.6361525620905654, 0,
+              -0.14941805815849923, -0.8803003775119922, -0.45027268321361347, 0,
+              0,            0,            0,            1);
+        mesh.setRotationFromMatrix(m);   
+        mesh.position.x = 2.8060600280383476;
+        mesh.position.y = 1.8590577792310747;
+        mesh.position.z = -1.8893480170561427;
+        markerRoot.add(mesh);
+        
+    //C13
+        mat = new THREE.MeshPhysicalMaterial({color:"#000000"});
+        mesh = new THREE.Mesh(sphere_geom, mat);
+        mesh.scale.x = 0.14718326645000723;
+        mesh.scale.y = 0.17962275380467782;
+        mesh.scale.z = 0.16734471127803924;
+        m = new THREE.Matrix4();
+        m.set(-0.34183992680040676, 0.8937034358135088, -0.2905849845746028, 0, 
+              0.5968297599775763, -0.032388582021631473, -0.8017139248882582, 0,
+              -0.7259061248193192, -0.4474875959954168, -0.5223170965802687, 0,
+              0,            0,            0,            1);
+        mesh.setRotationFromMatrix(m);
+        mesh.position.x = -3.2090972383374514;
+        mesh.position.y = 1.6292169149147262;
+        mesh.position.z = 0.769372598376405;
+        markerRoot.add(mesh);
+
+        mat = new THREE.MeshPhysicalMaterial({color: "#ffffff"});
+        mesh = new THREE.Mesh(marker_geom, mat);
+        mesh.scale.x = 0.15518326645000724;
+        mesh.scale.y = 0.18762275380467783;
+        mesh.scale.z = 0.17534471127803924;
+        mesh.setRotationFromMatrix(m);
+        mesh.position.x = -3.2090972383374514;
+        mesh.position.y = 1.6292169149147262;
+        mesh.position.z = 0.769372598376405;
+        markerRoot.add(mesh);
+
+        mat = new THREE.MeshPhysicalMaterial({color: "#ffffff"});
+        mesh = new THREE.Mesh(marker_geom, mat);
+        mesh.scale.x = 0.15518326645000724;
+        mesh.scale.y = 0.17534471127803924;
+        mesh.scale.z = 0.18762275380467783;
+        m = new THREE.Matrix4();
+        m.set(-0.34183992680040676, 0.2905849845746028, 0.8937034358135088, 0, 
+              0.5968297599775763, 0.8017139248882582, -0.032388582021631473, 0,
+              -0.7259061248193192, 0.5223170965802687, -0.4474875959954168, 0,
+              0,            0,            0,            1);
+        mesh.setRotationFromMatrix(m);    
+        mesh.position.x = -3.2090972383374514;
+        mesh.position.y = 1.6292169149147262;
+        mesh.position.z = 0.769372598376405;
+        markerRoot.add(mesh);
+
+        mat = new THREE.MeshPhysicalMaterial({color: "#ffffff"});
+        mesh = new THREE.Mesh(marker_geom, mat);
+        mesh.scale.x = 0.18762275380467783;
+        mesh.scale.y = 0.15518326645000724;
+        mesh.scale.z = 0.17534471127803924;
+        m = new THREE.Matrix4();
+        m.set(-0.8937034358135088, -0.34183992680040676, -0.2905849845746028, 0, 
+              0.032388582021631473, 0.5968297599775763, -0.8017139248882582, 0,
+              0.4474875959954168, -0.7259061248193192, -0.5223170965802687, 0,
+              0,            0,            0,            1);
+        mesh.setRotationFromMatrix(m);   
+        mesh.position.x = -3.2090972383374514;
+        mesh.position.y = 1.6292169149147262;
+        mesh.position.z = 0.769372598376405;
+        markerRoot.add(mesh);
+        
+    //C14
+        mat = new THREE.MeshPhysicalMaterial({color:"#000000"});
+        mesh = new THREE.Mesh(sphere_geom, mat);
+        mesh.scale.x = 0.2040657368622367;
+        mesh.scale.y = 0.1651593614467353;
+        mesh.scale.z = 0.1549622223813888;
+        m = new THREE.Matrix4();
+        m.set(-0.27691981980147046, 0.9521956083792346, -0.12899200279250053, 0, 
+              0.9519304572792789, 0.29014598694131616, 0.09820239694585861, 0,
+              0.13093440306192794, -0.09559722613731526, -0.9867711753236752, 0,
+              0,            0,            0,            1);
+        mesh.setRotationFromMatrix(m);
+        mesh.position.x = -3.8244837246263246;
+        mesh.position.y = 1.0253170138048608;
+        mesh.position.z = 2.0255751963939392;
+        markerRoot.add(mesh);
+
+        mat = new THREE.MeshPhysicalMaterial({color: "#ffffff"});
+        mesh = new THREE.Mesh(marker_geom, mat);
+        mesh.scale.x = 0.2120657368622367;
+        mesh.scale.y = 0.1731593614467353;
+        mesh.scale.z = 0.1629622223813888;
+        mesh.setRotationFromMatrix(m);
+        mesh.position.x = -3.8244837246263246;
+        mesh.position.y = 1.0253170138048608;
+        mesh.position.z = 2.0255751963939392;
+        markerRoot.add(mesh);
+
+        mat = new THREE.MeshPhysicalMaterial({color: "#ffffff"});
+        mesh = new THREE.Mesh(marker_geom, mat);
+        mesh.scale.x = 0.2120657368622367;
+        mesh.scale.y = 0.1629622223813888;
+        mesh.scale.z = 0.1731593614467353;
+        m = new THREE.Matrix4();
+        m.set(-0.27691981980147046, 0.12899200279250053, 0.9521956083792346, 0, 
+              0.9519304572792789, -0.09820239694585861, 0.29014598694131616, 0,
+              0.13093440306192794, 0.9867711753236752, -0.09559722613731526, 0,
+              0,            0,            0,            1);
+        mesh.setRotationFromMatrix(m);    
+        mesh.position.x = -3.8244837246263246;
+        mesh.position.y = 1.0253170138048608;
+        mesh.position.z = 2.0255751963939392;
+        markerRoot.add(mesh);
+
+        mat = new THREE.MeshPhysicalMaterial({color: "#ffffff"});
+        mesh = new THREE.Mesh(marker_geom, mat);
+        mesh.scale.x = 0.1731593614467353;
+        mesh.scale.y = 0.2120657368622367;
+        mesh.scale.z = 0.1629622223813888;
+        m = new THREE.Matrix4();
+        m.set(-0.9521956083792346, -0.27691981980147046, -0.12899200279250053, 0, 
+              -0.29014598694131616, 0.9519304572792789, 0.09820239694585861, 0,
+              0.09559722613731526, 0.13093440306192794, -0.9867711753236752, 0,
+              0,            0,            0,            1);
+        mesh.setRotationFromMatrix(m);   
+        mesh.position.x = -3.8244837246263246;
+        mesh.position.y = 1.0253170138048608;
+        mesh.position.z = 2.0255751963939392;
+        markerRoot.add(mesh);
+        
+    //O10
+        mat = new THREE.MeshPhysicalMaterial({color:"#ff0d0d"});
+        mesh = new THREE.Mesh(sphere_geom, mat);
+        mesh.scale.x = 0.1428561054049943;
+        mesh.scale.y = 0.19174910692953678;
+        mesh.scale.z = 0.23090018003510138;
+        m = new THREE.Matrix4();
+        m.set(0.8972225511349812, 0.4384756029045071, 0.05225743384787276, 0, 
+              0.25135441612786114, -0.4098266911308665, -0.8768483567469049, 0,
+              -0.3630601206795618, 0.7998632563721465, -0.4779185284940181, 0,
+              0,            0,            0,            1);
+        mesh.setRotationFromMatrix(m);
+        mesh.position.x = 5.052210637357136;
+        mesh.position.y = 2.6560382729641674;
+        mesh.position.z = -0.8521062653809041;
+        markerRoot.add(mesh);
+
+        mat = new THREE.MeshPhysicalMaterial({color: "#ffffff"});
+        mesh = new THREE.Mesh(marker_geom, mat);
+        mesh.scale.x = 0.1508561054049943;
+        mesh.scale.y = 0.1997491069295368;
+        mesh.scale.z = 0.23890018003510138;
+        mesh.setRotationFromMatrix(m);
+        mesh.position.x = 5.052210637357136;
+        mesh.position.y = 2.6560382729641674;
+        mesh.position.z = -0.8521062653809041;
+        markerRoot.add(mesh);
+
+        mat = new THREE.MeshPhysicalMaterial({color: "#ffffff"});
+        mesh = new THREE.Mesh(marker_geom, mat);
+        mesh.scale.x = 0.1508561054049943;
+        mesh.scale.y = 0.23890018003510138;
+        mesh.scale.z = 0.1997491069295368;
+        m = new THREE.Matrix4();
+        m.set(0.8972225511349812, -0.05225743384787276, 0.4384756029045071, 0, 
+              0.25135441612786114, 0.8768483567469049, -0.4098266911308665, 0,
+              -0.3630601206795618, 0.4779185284940181, 0.7998632563721465, 0,
+              0,            0,            0,            1);
+        mesh.setRotationFromMatrix(m);    
+        mesh.position.x = 5.052210637357136;
+        mesh.position.y = 2.6560382729641674;
+        mesh.position.z = -0.8521062653809041;
+        markerRoot.add(mesh);
+
+        mat = new THREE.MeshPhysicalMaterial({color: "#ffffff"});
+        mesh = new THREE.Mesh(marker_geom, mat);
+        mesh.scale.x = 0.1997491069295368;
+        mesh.scale.y = 0.1508561054049943;
+        mesh.scale.z = 0.23890018003510138;
+        m = new THREE.Matrix4();
+        m.set(-0.4384756029045071, 0.8972225511349812, 0.05225743384787276, 0, 
+              0.4098266911308665, 0.25135441612786114, -0.8768483567469049, 0,
+              -0.7998632563721465, -0.3630601206795618, -0.4779185284940181, 0,
+              0,            0,            0,            1);
+        mesh.setRotationFromMatrix(m);   
+        mesh.position.x = 5.052210637357136;
+        mesh.position.y = 2.6560382729641674;
+        mesh.position.z = -0.8521062653809041;
+        markerRoot.add(mesh);
+        
+    //O11
+        mat = new THREE.MeshPhysicalMaterial({color:"#ff0d0d"});
+        mesh = new THREE.Mesh(sphere_geom, mat);
+        mesh.scale.x = 0.14614507036218627;
+        mesh.scale.y = 0.17318425247475375;
+        mesh.scale.z = 0.19087321211629563;
+        m = new THREE.Matrix4();
+        m.set(0.8710112235259843, -0.4584157099055698, 0.17661960650941588, 0, 
+              -0.32389313187473034, -0.8061813663530624, -0.49514123608268396, 0,
+              0.36936795694286595, 0.3740676963557298, -0.8506707182729232, 0,
+              0,            0,            0,            1);
+        mesh.setRotationFromMatrix(m);
+        mesh.position.x = 4.996316061369309;
+        mesh.position.y = 0.4556018117225484;
+        mesh.position.z = -1.877459876179862;
+        markerRoot.add(mesh);
+
+        mat = new THREE.MeshPhysicalMaterial({color: "#ffffff"});
+        mesh = new THREE.Mesh(marker_geom, mat);
+        mesh.scale.x = 0.15414507036218628;
+        mesh.scale.y = 0.18118425247475375;
+        mesh.scale.z = 0.19887321211629563;
+        mesh.setRotationFromMatrix(m);
+        mesh.position.x = 4.996316061369309;
+        mesh.position.y = 0.4556018117225484;
+        mesh.position.z = -1.877459876179862;
+        markerRoot.add(mesh);
+
+        mat = new THREE.MeshPhysicalMaterial({color: "#ffffff"});
+        mesh = new THREE.Mesh(marker_geom, mat);
+        mesh.scale.x = 0.15414507036218628;
+        mesh.scale.y = 0.19887321211629563;
+        mesh.scale.z = 0.18118425247475375;
+        m = new THREE.Matrix4();
+        m.set(0.8710112235259843, -0.17661960650941588, -0.4584157099055698, 0, 
+              -0.32389313187473034, 0.49514123608268396, -0.8061813663530624, 0,
+              0.36936795694286595, 0.8506707182729232, 0.3740676963557298, 0,
+              0,            0,            0,            1);
+        mesh.setRotationFromMatrix(m);    
+        mesh.position.x = 4.996316061369309;
+        mesh.position.y = 0.4556018117225484;
+        mesh.position.z = -1.877459876179862;
+        markerRoot.add(mesh);
+
+        mat = new THREE.MeshPhysicalMaterial({color: "#ffffff"});
+        mesh = new THREE.Mesh(marker_geom, mat);
+        mesh.scale.x = 0.18118425247475375;
+        mesh.scale.y = 0.15414507036218628;
+        mesh.scale.z = 0.19887321211629563;
+        m = new THREE.Matrix4();
+        m.set(0.4584157099055698, 0.8710112235259843, 0.17661960650941588, 0, 
+              0.8061813663530624, -0.32389313187473034, -0.49514123608268396, 0,
+              -0.3740676963557298, 0.36936795694286595, -0.8506707182729232, 0,
+              0,            0,            0,            1);
+        mesh.setRotationFromMatrix(m);   
+        mesh.position.x = 4.996316061369309;
+        mesh.position.y = 0.4556018117225484;
+        mesh.position.z = -1.877459876179862;
+        markerRoot.add(mesh);
+        
+    //O12
+        mat = new THREE.MeshPhysicalMaterial({color:"#ff0d0d"});
+        mesh = new THREE.Mesh(sphere_geom, mat);
+        mesh.scale.x = 0.2656810156368102;
+        mesh.scale.y = 0.19827483509832483;
+        mesh.scale.z = 0.14557158959400415;
+        m = new THREE.Matrix4();
+        m.set(-0.9388024711670431, -0.3313793084323446, -0.09400890422483286, 0, 
+              -0.25070879364357196, 0.8445117247167089, -0.47322832502481715, 0,
+              0.23620969692296243, -0.4206990619895774, -0.8759094007491024, 0,
+              0,            0,            0,            1);
+        mesh.setRotationFromMatrix(m);
+        mesh.position.x = 4.907579359753106;
+        mesh.position.y = 2.4322752071662777;
+        mesh.position.z = -3.285957742092714;
+        markerRoot.add(mesh);
+
+        mat = new THREE.MeshPhysicalMaterial({color: "#ffffff"});
+        mesh = new THREE.Mesh(marker_geom, mat);
+        mesh.scale.x = 0.2736810156368102;
+        mesh.scale.y = 0.20627483509832484;
+        mesh.scale.z = 0.15357158959400416;
+        mesh.setRotationFromMatrix(m);
+        mesh.position.x = 4.907579359753106;
+        mesh.position.y = 2.4322752071662777;
+        mesh.position.z = -3.285957742092714;
+        markerRoot.add(mesh);
+
+        mat = new THREE.MeshPhysicalMaterial({color: "#ffffff"});
+        mesh = new THREE.Mesh(marker_geom, mat);
+        mesh.scale.x = 0.2736810156368102;
+        mesh.scale.y = 0.15357158959400416;
+        mesh.scale.z = 0.20627483509832484;
+        m = new THREE.Matrix4();
+        m.set(-0.9388024711670431, 0.09400890422483286, -0.3313793084323446, 0, 
+              -0.25070879364357196, 0.47322832502481715, 0.8445117247167089, 0,
+              0.23620969692296243, 0.8759094007491024, -0.4206990619895774, 0,
+              0,            0,            0,            1);
+        mesh.setRotationFromMatrix(m);    
+        mesh.position.x = 4.907579359753106;
+        mesh.position.y = 2.4322752071662777;
+        mesh.position.z = -3.285957742092714;
+        markerRoot.add(mesh);
+
+        mat = new THREE.MeshPhysicalMaterial({color: "#ffffff"});
+        mesh = new THREE.Mesh(marker_geom, mat);
+        mesh.scale.x = 0.20627483509832484;
+        mesh.scale.y = 0.2736810156368102;
+        mesh.scale.z = 0.15357158959400416;
+        m = new THREE.Matrix4();
+        m.set(0.3313793084323446, -0.9388024711670431, -0.09400890422483286, 0, 
+              -0.8445117247167089, -0.25070879364357196, -0.47322832502481715, 0,
+              0.4206990619895774, 0.23620969692296243, -0.8759094007491024, 0,
+              0,            0,            0,            1);
+        mesh.setRotationFromMatrix(m);   
+        mesh.position.x = 4.907579359753106;
+        mesh.position.y = 2.4322752071662777;
+        mesh.position.z = -3.285957742092714;
+        markerRoot.add(mesh);
+        
+    //O15
+        mat = new THREE.MeshPhysicalMaterial({color:"#ff0d0d"});
+        mesh = new THREE.Mesh(sphere_geom, mat);
+        mesh.scale.x = 0.20133824449254029;
+        mesh.scale.y = 0.15219044775059434;
+        mesh.scale.z = 0.1743707513264071;
+        m = new THREE.Matrix4();
+        m.set(-0.32942755614245434, -0.9441733999138586, -0.0037518194406003296, 0, 
+              -0.28175130461081616, 0.10209568521793956, -0.9540401843790345, 0,
+              0.9011624091161998, -0.31323004637962876, -0.2996552192785952, 0,
+              0,            0,            0,            1);
+        mesh.setRotationFromMatrix(m);
+        mesh.position.x = -3.3281010270883744;
+        mesh.position.y = 1.5744862443898044;
+        mesh.position.z = 3.2450253446870367;
+        markerRoot.add(mesh);
+
+        mat = new THREE.MeshPhysicalMaterial({color: "#ffffff"});
+        mesh = new THREE.Mesh(marker_geom, mat);
+        mesh.scale.x = 0.2093382444925403;
+        mesh.scale.y = 0.16019044775059435;
+        mesh.scale.z = 0.1823707513264071;
+        mesh.setRotationFromMatrix(m);
+        mesh.position.x = -3.3281010270883744;
+        mesh.position.y = 1.5744862443898044;
+        mesh.position.z = 3.2450253446870367;
+        markerRoot.add(mesh);
+
+        mat = new THREE.MeshPhysicalMaterial({color: "#ffffff"});
+        mesh = new THREE.Mesh(marker_geom, mat);
+        mesh.scale.x = 0.2093382444925403;
+        mesh.scale.y = 0.1823707513264071;
+        mesh.scale.z = 0.16019044775059435;
+        m = new THREE.Matrix4();
+        m.set(-0.32942755614245434, 0.0037518194406003296, -0.9441733999138586, 0, 
+              -0.28175130461081616, 0.9540401843790345, 0.10209568521793956, 0,
+              0.9011624091161998, 0.2996552192785952, -0.31323004637962876, 0,
+              0,            0,            0,            1);
+        mesh.setRotationFromMatrix(m);    
+        mesh.position.x = -3.3281010270883744;
+        mesh.position.y = 1.5744862443898044;
+        mesh.position.z = 3.2450253446870367;
+        markerRoot.add(mesh);
+
+        mat = new THREE.MeshPhysicalMaterial({color: "#ffffff"});
+        mesh = new THREE.Mesh(marker_geom, mat);
+        mesh.scale.x = 0.16019044775059435;
+        mesh.scale.y = 0.2093382444925403;
+        mesh.scale.z = 0.1823707513264071;
+        m = new THREE.Matrix4();
+        m.set(0.9441733999138586, -0.32942755614245434, -0.0037518194406003296, 0, 
+              -0.10209568521793956, -0.28175130461081616, -0.9540401843790345, 0,
+              0.31323004637962876, 0.9011624091161998, -0.2996552192785952, 0,
+              0,            0,            0,            1);
+        mesh.setRotationFromMatrix(m);   
+        mesh.position.x = -3.3281010270883744;
+        mesh.position.y = 1.5744862443898044;
+        mesh.position.z = 3.2450253446870367;
+        markerRoot.add(mesh);
+        
+    //S9
+        mat = new THREE.MeshPhysicalMaterial({color:"#ffff30"});
+        mesh = new THREE.Mesh(sphere_geom, mat);
+        mesh.scale.x = 0.1403940189881448;
+        mesh.scale.y = 0.1527354119942503;
+        mesh.scale.z = 0.1627456400500582;
+        m = new THREE.Matrix4();
+        m.set(-0.3221319815685583, 0.9087741196079988, -0.2652556992439961, 0, 
+              0.11061067719774764, -0.24214239290942555, -0.9639151101865524, 0,
+              -0.940210755384435, -0.3398479970322092, -0.022518311939962402, 0,
+              0,            0,            0,            1);
+        mesh.setRotationFromMatrix(m);
+        mesh.position.x = 4.589285406304484;
+        mesh.position.y = 1.8723363386655387;
+        mesh.position.z = -1.9845790514422528;
+        markerRoot.add(mesh);
+
+        mat = new THREE.MeshPhysicalMaterial({color: "#000000"});
+        mesh = new THREE.Mesh(marker_geom, mat);
+        mesh.scale.x = 0.1483940189881448;
+        mesh.scale.y = 0.16073541199425032;
+        mesh.scale.z = 0.1707456400500582;
+        mesh.setRotationFromMatrix(m);
+        mesh.position.x = 4.589285406304484;
+        mesh.position.y = 1.8723363386655387;
+        mesh.position.z = -1.9845790514422528;
+        markerRoot.add(mesh);
+
+        mat = new THREE.MeshPhysicalMaterial({color: "#000000"});
+        mesh = new THREE.Mesh(marker_geom, mat);
+        mesh.scale.x = 0.1483940189881448;
+        mesh.scale.y = 0.1707456400500582;
+        mesh.scale.z = 0.16073541199425032;
+        m = new THREE.Matrix4();
+        m.set(-0.3221319815685583, 0.2652556992439961, 0.9087741196079988, 0, 
+              0.11061067719774764, 0.9639151101865524, -0.24214239290942555, 0,
+              -0.940210755384435, 0.022518311939962402, -0.3398479970322092, 0,
+              0,            0,            0,            1);
+        mesh.setRotationFromMatrix(m);    
+        mesh.position.x = 4.589285406304484;
+        mesh.position.y = 1.8723363386655387;
+        mesh.position.z = -1.9845790514422528;
+        markerRoot.add(mesh);
+
+        mat = new THREE.MeshPhysicalMaterial({color: "#000000"});
+        mesh = new THREE.Mesh(marker_geom, mat);
+        mesh.scale.x = 0.16073541199425032;
+        mesh.scale.y = 0.1483940189881448;
+        mesh.scale.z = 0.1707456400500582;
+        m = new THREE.Matrix4();
+        m.set(-0.9087741196079988, -0.3221319815685583, -0.2652556992439961, 0, 
+              0.24214239290942555, 0.11061067719774764, -0.9639151101865524, 0,
+              0.3398479970322092, -0.940210755384435, -0.022518311939962402, 0,
+              0,            0,            0,            1);
+        mesh.setRotationFromMatrix(m);   
+        mesh.position.x = 4.589285406304484;
+        mesh.position.y = 1.8723363386655387;
+        mesh.position.z = -1.9845790514422528;
+        markerRoot.add(mesh);
+        
+    //N4 - C3
+    bond_geom = new THREE.CylinderBufferGeometry(0.04, 0.04, 1.4776378143515174, 6, 1);
+    mesh = new THREE.Mesh(bond_geom, bond_mat);
+    m = new THREE.Matrix4();
+    m.set(0.9494666968885204, 0.2601936794807081, 0.17553415809435227, 0,
+          -0.2601936794807081, 0.3397254221113828, 0.9038173967840701, 0,
+          0.17553415809435227, -0.9038173967840701, 0.3902587252228623, 0,
+          0,           0,           0,            1);
+    mesh.setRotationFromMatrix(m);
+    mesh.position.x = -1.647991662254566;
+    mesh.position.y = 1.4167078257961419;
+    mesh.position.z = -0.1948142235555137;
+    markerRoot.add(mesh);
+    
+    //O12 - S9
+    bond_geom = new THREE.CylinderBufferGeometry(0.04, 0.04, 1.4520430688305876, 6, 1);
+    mesh = new THREE.Mesh(bond_geom, bond_mat);
+    m = new THREE.Matrix4();
+    m.set(0.9217901064549684, -0.21920420976559746, 0.3197694701855981, 0,
+          0.21920420976559746, -0.38562139134873563, -0.8962397318548789, 0,
+          0.3197694701855981, 0.8962397318548789, -0.3074114978037039, 0,
+          0,           0,           0,            1);
+    mesh.setRotationFromMatrix(m);
+    mesh.position.x = 4.748432383028795;
+    mesh.position.y = 2.1523057729159083;
+    mesh.position.z = -2.6352683967674837;
+    markerRoot.add(mesh);
+    
+    //N1 - C2
+    bond_geom = new THREE.CylinderBufferGeometry(0.04, 0.04, 1.5005037670025785, 6, 1);
+    mesh = new THREE.Mesh(bond_geom, bond_mat);
+    m = new THREE.Matrix4();
+    m.set(0.3489926276186851, -0.6709558887312602, -0.6542341639234768, 0,
+          0.6709558887312602, -0.3084843218035478, 0.6742815573469662, 0,
+          -0.6542341639234768, -0.6742815573469662, 0.342523050577767, 0,
+          0,           0,           0,            1);
+    mesh.setRotationFromMatrix(m);
+    mesh.position.x = 0.43413604916150966;
+    mesh.position.y = 1.436262447436568;
+    mesh.position.z = -0.7511036315835856;
+    markerRoot.add(mesh);
+    
+    //N4 - C13
+    bond_geom = new THREE.CylinderBufferGeometry(0.04, 0.04, 1.4753002632881602, 6, 1);
+    mesh = new THREE.Mesh(bond_geom, bond_mat);
+    m = new THREE.Matrix4();
+    m.set(0.34489697699707644, -0.9278582809332403, 0.14186291186173522, 0,
+          0.9278582809332403, 0.31417648715772384, -0.2009282096193685, 0,
+          0.14186291186173522, 0.2009282096193685, 0.9692795101606475, 0,
+          0,           0,           0,            1);
+    mesh.setRotationFromMatrix(m);
+    mesh.position.x = -2.524662455259997;
+    mesh.position.y = 1.3974645878033565;
+    mesh.position.z = 0.6211578780996685;
+    markerRoot.add(mesh);
+    
+    //H3AB - C3
+    bond_geom = new THREE.CylinderBufferGeometry(0.04, 0.04, 0.990094297095882, 6, 1);
+    mesh = new THREE.Mesh(bond_geom, bond_mat);
+    m = new THREE.Matrix4();
+    m.set(0.6697108170563391, 0.6611337185061048, -0.33821535709074674, 0,
+          -0.6611337185061048, 0.3233790760270443, -0.6769993939747551, 0,
+          -0.33821535709074674, 0.6769993939747551, 0.6536682589707052, 0,
+          0,           0,           0,            1);
+    mesh.setRotationFromMatrix(m);
+    mesh.position.x = -1.7830480144819338;
+    mesh.position.y = 1.507615501413041;
+    mesh.position.z = -1.197718224489846;
+    markerRoot.add(mesh);
+    
+    //C8 - S9
+    bond_geom = new THREE.CylinderBufferGeometry(0.04, 0.04, 1.785815785500651, 6, 1);
+    mesh = new THREE.Mesh(bond_geom, bond_mat);
+    m = new THREE.Matrix4();
+    m.set(0.010258281591306373, 0.9985494543975102, 0.052855981508512964, 0,
+          -0.9985494543975102, 0.007435570646353917, 0.05332634819297005, 0,
+          0.052855981508512964, -0.05332634819297005, 0.9971772890550475, 0,
+          0,           0,           0,            1);
+    mesh.setRotationFromMatrix(m);
+    mesh.position.x = 3.6976727171714154;
+    mesh.position.y = 1.8656970589483066;
+    mesh.position.z = -1.9369635342491978;
+    markerRoot.add(mesh);
+    
+    //H6A - C6
+    bond_geom = new THREE.CylinderBufferGeometry(0.04, 0.04, 0.9900898653749556, 6, 1);
+    mesh = new THREE.Mesh(bond_geom, bond_mat);
+    m = new THREE.Matrix4();
+    m.set(0.3614820986990569, -0.646435738733544, -0.6719014273002719, 0,
+          0.646435738733544, -0.3455482399779579, 0.6802332317199394, 0,
+          -0.6719014273002719, -0.6802332317199394, 0.29296966132298496, 0,
+          0,           0,           0,            1);
+    mesh.setRotationFromMatrix(m);
+    mesh.position.x = 0.8611667922995216;
+    mesh.position.y = 1.3558955744266237;
+    mesh.position.z = 1.4554783620703842;
+    markerRoot.add(mesh);
+    
+    //H13A - C13
+    bond_geom = new THREE.CylinderBufferGeometry(0.04, 0.04, 0.9900633923668767, 6, 1);
+    mesh = new THREE.Mesh(bond_geom, bond_mat);
+    m = new THREE.Matrix4();
+    m.set(0.7172088026910972, 0.5869931898661355, -0.3755669426256546, 0,
+          -0.5869931898661355, 0.21842903254461965, -0.779568953199395, 0,
+          -0.3755669426256546, 0.779568953199395, 0.5012202298535223, 0,
+          0,           0,           0,            1);
+    mesh.setRotationFromMatrix(m);
+    mesh.position.x = -3.4996774727650113;
+    mesh.position.y = 1.5210876204384558;
+    mesh.position.z = 0.38346125718216106;
+    markerRoot.add(mesh);
+    
+    //C2 - C3
+    bond_geom = new THREE.CylinderBufferGeometry(0.04, 0.04, 1.5140077832042547, 6, 1);
+    mesh = new THREE.Mesh(bond_geom, bond_mat);
+    m = new THREE.Matrix4();
+    m.set(0.3577075303779126, -0.9157851086384649, 0.18271003668920308, 0,
+          0.9157851086384649, 0.30573283180078026, -0.26050925195683744, 0,
+          0.18271003668920308, 0.26050925195683744, 0.9480253014228677, 0,
+          0,           0,           0,            1);
+    mesh.setRotationFromMatrix(m);
+    mesh.position.x = -0.7625027612159947;
+    mesh.position.y = 1.436262447436568;
+    mesh.position.z = -1.0597781224636444;
+    markerRoot.add(mesh);
+    
+    //H8A - C8
+    bond_geom = new THREE.CylinderBufferGeometry(0.04, 0.04, 0.9900201604778315, 6, 1);
+    mesh = new THREE.Mesh(bond_geom, bond_mat);
+    m = new THREE.Matrix4();
+    m.set(-0.8525549731496287, 0.3453816599771188, -0.39225186641912263, 0,
+          -0.3453816599771188, -0.9356086632907084, -0.07312959815849812, 0,
+          -0.39225186641912263, 0.07312959815849812, 0.9169463098589204, 0,
+          0,           0,           0,            1);
+    mesh.setRotationFromMatrix(m);
+    mesh.position.x = 2.6350926248200244;
+    mesh.position.y = 2.322193498718833;
+    mesh.position.z = -1.9255479053084206;
+    markerRoot.add(mesh);
+    
+    //N1 - C6
+    bond_geom = new THREE.CylinderBufferGeometry(0.04, 0.04, 1.5002151307151335, 6, 1);
+    mesh = new THREE.Mesh(bond_geom, bond_mat);
+    m = new THREE.Matrix4();
+    m.set(0.8970611311740173, -0.2642087156580538, 0.35422462013122996, 0,
+          0.2642087156580538, -0.32186698546605164, -0.9091729198768067, 0,
+          0.35422462013122996, 0.9091729198768067, -0.21892811664006873, 0,
+          0,           0,           0,            1);
+    mesh.setRotationFromMatrix(m);
+    mesh.position.x = 0.7393370119799068;
+    mesh.position.y = 1.4262685300633784;
+    mesh.position.z = 0.43675486224397986;
+    markerRoot.add(mesh);
+    
+    //H2A - C2
+    bond_geom = new THREE.CylinderBufferGeometry(0.04, 0.04, 0.9899923642551406, 6, 1);
+    mesh = new THREE.Mesh(bond_geom, bond_mat);
+    m = new THREE.Matrix4();
+    m.set(0.999853554717757, -0.017106067943426197, 0.0005015553608559909, 0,
+          0.017106067943426197, 0.9981357951822458, -0.058585977976140215, 0,
+          0.0005015553608559909, 0.058585977976140215, 0.9982822404644888, 0,
+          0,           0,           0,            1);
+    mesh.setRotationFromMatrix(m);
+    mesh.position.x = -0.060782431782188964;
+    mesh.position.y = 0.7107480961127604;
+    mesh.position.z = -1.2859844754177288;
+    markerRoot.add(mesh);
+    
+    //H14B - C14
+    bond_geom = new THREE.CylinderBufferGeometry(0.04, 0.04, 0.9900440148354376, 6, 1);
+    mesh = new THREE.Mesh(bond_geom, bond_mat);
+    m = new THREE.Matrix4();
+    m.set(0.9851253540522983, -0.17183721974575084, 8.193524499284873e-05, 0,
+          0.17183721974575084, 0.985124902721598, -0.0009465451983368744, 0,
+          8.193524499284873e-05, 0.0009465451983368744, 0.9999995486692997, 0,
+          0,           0,           0,            1);
+    mesh.setRotationFromMatrix(m);
+    mesh.position.x = -3.7394205191587035;
+    mesh.position.y = 0.5376585069024304;
+    mesh.position.z = 2.025106635689747;
+    markerRoot.add(mesh);
+    
+    //H6AB - C6
+    bond_geom = new THREE.CylinderBufferGeometry(0.04, 0.04, 0.9899762507594317, 6, 1);
+    mesh = new THREE.Mesh(bond_geom, bond_mat);
+    m = new THREE.Matrix4();
+    m.set(0.9996541923005923, -0.026294394300986908, -0.0003172446922119654, 0,
+          0.026294394300986908, 0.9993631513697251, 0.024122531225313913, 0,
+          -0.0003172446922119654, -0.024122531225313913, 0.9997089590691328, 0,
+          0,           0,           0,            1);
+    mesh.setRotationFromMatrix(m);
+    mesh.position.x = 0.5541674684744349;
+    mesh.position.y = 0.6901607763563935;
+    mesh.position.z = 1.1306727141724333;
+    markerRoot.add(mesh);
+    
+    //C7 - C8
+    bond_geom = new THREE.CylinderBufferGeometry(0.04, 0.04, 1.5225509019200634, 6, 1);
+    mesh = new THREE.Mesh(bond_geom, bond_mat);
+    m = new THREE.Matrix4();
+    m.set(0.9340037353489758, 0.30419475674089236, 0.18735680485509332, 0,
+          -0.30419475674089236, 0.40211647610596624, 0.863578537028028, 0,
+          0.18735680485509332, -0.863578537028028, 0.4681127407569905, 0,
+          0,           0,           0,            1);
+    mesh.setRotationFromMatrix(m);
+    mesh.position.x = 2.5744840274207474;
+    mesh.position.y = 1.5529363775450464;
+    mesh.position.z = -1.2319268768407263;
+    markerRoot.add(mesh);
+    
+    //C5 - C6
+    bond_geom = new THREE.CylinderBufferGeometry(0.04, 0.04, 1.5178364699556088, 6, 1);
+    mesh = new THREE.Mesh(bond_geom, bond_mat);
+    m = new THREE.Matrix4();
+    m.set(-0.24732134243760906, 0.9222313541344314, 0.297189305033394, 0,
+          -0.9222313541344314, -0.3181302671479227, 0.21973270711426704, 0,
+          0.297189305033394, -0.21973270711426704, 0.9291910752896866, 0,
+          0,           0,           0,            1);
+    mesh.setRotationFromMatrix(m);
+    mesh.position.x = -0.15874613598949883;
+    mesh.position.y = 1.426268530063378;
+    mesh.position.z = 1.285491505911856;
+    markerRoot.add(mesh);
+    
+    //H3A - C3
+    bond_geom = new THREE.CylinderBufferGeometry(0.04, 0.04, 0.9900135569536103, 6, 1);
+    mesh = new THREE.Mesh(bond_geom, bond_mat);
+    m = new THREE.Matrix4();
+    m.set(-0.9734596362832928, 0.02611849225361783, 0.22736349946637516, 0,
+          -0.02611849225361783, -0.999654325011234, 0.0030091275698711567, 0,
+          0.22736349946637516, -0.0030091275698711567, 0.973805311272059, 0,
+          0,           0,           0,            1);
+    mesh.setRotationFromMatrix(m);
+    mesh.position.x = -1.4686844830357244;
+    mesh.position.y = 2.1625390579145134;
+    mesh.position.z = -0.8610820663895717;
+    markerRoot.add(mesh);
+    
+    //H13B - C13
+    bond_geom = new THREE.CylinderBufferGeometry(0.04, 0.04, 0.990007408228727, 6, 1);
+    mesh = new THREE.Mesh(bond_geom, bond_mat);
+    m = new THREE.Matrix4();
+    m.set(0.9605784784331193, -0.013922425307571666, -0.2776601390993467, 0,
+          0.013922425307571666, -0.9950830429993411, 0.09806071389056455, 0,
+          -0.2776601390993467, -0.09806071389056455, -0.9556615214324606, 0,
+          0,           0,           0,            1);
+    mesh.setRotationFromMatrix(m);
+    mesh.position.x = -3.202205586239948;
+    mesh.position.y = 2.1217867071007923;
+    mesh.position.z = 0.8179130149803333;
+    markerRoot.add(mesh);
+    
+    //O10 - S9
+    bond_geom = new THREE.CylinderBufferGeometry(0.04, 0.04, 1.4529222630747032, 6, 1);
+    mesh = new THREE.Mesh(bond_geom, bond_mat);
+    m = new THREE.Matrix4();
+    m.set(0.7796007052255215, -0.31861665473622813, -0.5391717423387142, 0,
+          0.31861665473622813, -0.5393970167682223, 0.7794448573351662, 0,
+          -0.5391717423387142, -0.7794448573351662, -0.31899772199374343, 0,
+          0,           0,           0,            1);
+    mesh.setRotationFromMatrix(m);
+    mesh.position.x = 4.820748021830809;
+    mesh.position.y = 2.264187305814853;
+    mesh.position.z = -1.4183426584115784;
+    markerRoot.add(mesh);
+    
+    //H7AB - C7
+    bond_geom = new THREE.CylinderBufferGeometry(0.04, 0.04, 0.9902907251751765, 6, 1);
+    mesh = new THREE.Mesh(bond_geom, bond_mat);
+    m = new THREE.Matrix4();
+    m.set(0.47074966317619016, -0.6135665355593569, -0.633980174028488, 0,
+          0.6135665355593569, -0.28868464058505006, 0.7349811458343465, 0,
+          -0.633980174028488, -0.7349811458343465, 0.24056569623875967, 0,
+          0,           0,           0,            1);
+    mesh.setRotationFromMatrix(m);
+    mesh.position.x = 2.646712651524296;
+    mesh.position.y = 1.3897558368949703;
+    mesh.position.z = -0.21058323067612145;
+    markerRoot.add(mesh);
+    
+    //C14 - O15
+    bond_geom = new THREE.CylinderBufferGeometry(0.04, 0.04, 1.426548733975944, 6, 1);
+    mesh = new THREE.Mesh(bond_geom, bond_mat);
+    m = new THREE.Matrix4();
+    m.set(0.9125778046643918, 0.3479605608386602, -0.2147677781576282, 0,
+          -0.3479605608386602, 0.38496352595985306, -0.8548254393625653, 0,
+          -0.2147677781576282, 0.8548254393625653, 0.4723857212954613, 0,
+          0,           0,           0,            1);
+    mesh.setRotationFromMatrix(m);
+    mesh.position.x = -3.5762923758573493;
+    mesh.position.y = 1.2999016290973326;
+    mesh.position.z = 2.6353002705404878;
+    markerRoot.add(mesh);
+    
+    //H5A - C5
+    bond_geom = new THREE.CylinderBufferGeometry(0.04, 0.04, 0.9900984620807383, 6, 1);
+    mesh = new THREE.Mesh(bond_geom, bond_mat);
+    m = new THREE.Matrix4();
+    m.set(0.9518815759162982, 0.25164671095567803, 0.17491540325624289, 0,
+          -0.25164671095567803, 0.3160461578013264, 0.9147615858813753, 0,
+          0.17491540325624289, -0.9147615858813753, 0.3641645818850281, 0,
+          0,           0,           0,            1);
+    mesh.setRotationFromMatrix(m);
+    mesh.position.x = -0.9832218382628384;
+    mesh.position.y = 1.511244983507487;
+    mesh.position.z = 1.9051026838377536;
+    markerRoot.add(mesh);
+    
+    //H2AB - C2
+    bond_geom = new THREE.CylinderBufferGeometry(0.04, 0.04, 0.990104892041264, 6, 1);
+    mesh = new THREE.Mesh(bond_geom, bond_mat);
+    m = new THREE.Matrix4();
+    m.set(0.9131813582198469, -0.2340924727002138, 0.33361732752489826, 0,
+          0.2340924727002138, -0.3688073822478577, -0.899545345730043, 0,
+          0.33361732752489826, 0.899545345730043, -0.2819887404677046, 0,
+          0,           0,           0,            1);
+    mesh.setRotationFromMatrix(m);
+    mesh.position.x = 0.0466381810998591;
+    mesh.position.y = 1.3874005006651067;
+    mesh.position.z = -1.7023067637034623;
+    markerRoot.add(mesh);
+    
+    //H14A - C14
+    bond_geom = new THREE.CylinderBufferGeometry(0.04, 0.04, 0.9900396452222822, 6, 1);
+    mesh = new THREE.Mesh(bond_geom, bond_mat);
+    m = new THREE.Matrix4();
+    m.set(-0.13315529807015802, 0.9904195519379358, -0.03658931175774567, 0,
+          -0.9904195519379358, -0.13433675813762247, -0.031980408880001754, 0,
+          -0.03658931175774567, 0.031980408880001754, 0.9988185399325357, 0,
+          0,           0,           0,            1);
+    mesh.setRotationFromMatrix(m);
+    mesh.position.x = -4.314761035537248;
+    mesh.position.y = 1.0918163719883025;
+    mesh.position.z = 2.009744260063129;
+    markerRoot.add(mesh);
+    
+    //N1 - C7
+    bond_geom = new THREE.CylinderBufferGeometry(0.04, 0.04, 1.503557248592254, 6, 1);
+    mesh = new THREE.Mesh(bond_geom, bond_mat);
+    m = new THREE.Matrix4();
+    m.set(-0.21332089882453587, 0.9347073812390977, 0.28428208804256444, 0,
+          -0.9347073812390977, -0.279928426692996, 0.21900271091092047, 0,
+          0.28428208804256444, -0.21900271091092047, 0.9333924721315399, 0,
+          0,           0,           0,            1);
+    mesh.setRotationFromMatrix(m);
+    mesh.position.x = 1.6402149976157834;
+    mesh.position.y = 1.4572591833796578;
+    mesh.position.z = -0.4098641798995758;
+    markerRoot.add(mesh);
+    
+    //H15 - O15
+    bond_geom = new THREE.CylinderBufferGeometry(0.04, 0.04, 0.8138403134959005, 6, 1);
+    mesh = new THREE.Mesh(bond_geom, bond_mat);
+    m = new THREE.Matrix4();
+    m.set(-0.7720824061968341, 0.3356941223990428, 0.5396278478989414, 0,
+          -0.3356941223990428, -0.9364078423107223, 0.10222430750909335, 0,
+          0.5396278478989414, -0.10222430750909335, 0.8356745638861119, 0,
+          0,           0,           0,            1);
+    mesh.setRotationFromMatrix(m);
+    mesh.position.x = -3.4647017319943583;
+    mesh.position.y = 1.9555294703628934;
+    mesh.position.z = 3.286622475922088;
+    markerRoot.add(mesh);
+    
+    //N4 - C5
+    bond_geom = new THREE.CylinderBufferGeometry(0.04, 0.04, 1.474633564421158, 6, 1);
+    mesh = new THREE.Mesh(bond_geom, bond_mat);
+    m = new THREE.Matrix4();
+    m.set(0.6694432500056431, 0.665645600612281, -0.3297903415920451, 0,
+          -0.665645600612281, 0.3404175398688677, -0.6641022759599186, 0,
+          -0.3297903415920451, 0.6641022759599186, 0.6709742898632245, 0,
+          0,           0,           0,            1);
+    mesh.setRotationFromMatrix(m);
+    mesh.position.x = -1.3494359998464671;
+    mesh.position.y = 1.4167078257961419;
+    mesh.position.z = 0.9625969109924211;
+    markerRoot.add(mesh);
+    
+    //C13 - C14
+    bond_geom = new THREE.CylinderBufferGeometry(0.04, 0.04, 1.5236274430888521, 6, 1);
+    mesh = new THREE.Mesh(bond_geom, bond_mat);
+    m = new THREE.Matrix4();
+    m.set(0.729754835624258, -0.4038956433085107, 0.5516576739241614, 0,
+          0.4038956433085107, -0.39635667094941396, -0.8244814726301023, 0,
+          0.5516576739241614, 0.8244814726301023, -0.12611150657367198, 0,
+          0,           0,           0,            1);
+    mesh.setRotationFromMatrix(m);
+    mesh.position.x = -3.516790481481888;
+    mesh.position.y = 1.3272669643597936;
+    mesh.position.z = 1.3974738973851721;
+    markerRoot.add(mesh);
+    
+    //H5AB - C5
+    bond_geom = new THREE.CylinderBufferGeometry(0.04, 0.04, 0.9900501740408149, 6, 1);
+    mesh = new THREE.Mesh(bond_geom, bond_mat);
+    m = new THREE.Matrix4();
+    m.set(-0.9144912956356699, 0.015029376785525614, 0.40432633854354805, 0,
+          -0.015029376785525614, -0.9998820145241314, 0.003174092721202629, 0,
+          0.40432633854354805, -0.003174092721202629, 0.9146092811115386, 0,
+          0,           0,           0,            1);
+    mesh.setRotationFromMatrix(m);
+    mesh.position.x = -0.8660842460615092;
+    mesh.position.y = 2.162670072150245;
+    mesh.position.z = 1.4538219196874342;
+    markerRoot.add(mesh);
+    
+    //H8AB - C8
+    bond_geom = new THREE.CylinderBufferGeometry(0.04, 0.04, 0.9900579465637027, 6, 1);
+    mesh = new THREE.Mesh(bond_geom, bond_mat);
+    m = new THREE.Matrix4();
+    m.set(0.9097813362565617, 0.3713402000590184, -0.18548416649232707, 0,
+          -0.3713402000590184, 0.5284370046979427, -0.7634531995387764, 0,
+          -0.18548416649232707, 0.7634531995387764, 0.6186556684413811, 0,
+          0,           0,           0,            1);
+    mesh.setRotationFromMatrix(m);
+    mesh.position.x = 2.6222358700648547;
+    mesh.position.y = 1.5974661513513153;
+    mesh.position.z = -2.267279470572568;
+    markerRoot.add(mesh);
+    
+    //O11 - S9
+    bond_geom = new THREE.CylinderBufferGeometry(0.04, 0.04, 1.4779327426184772, 6, 1);
+    mesh = new THREE.Mesh(bond_geom, bond_mat);
+    m = new THREE.Matrix4();
+    m.set(0.9612741537867272, -0.27540539790984164, -0.010191568266629175, 0,
+          0.27540539790984164, 0.958592015786144, 0.07247905954949345, 0,
+          -0.010191568266629175, -0.07247905954949345, 0.9973178619994167, 0,
+          0,           0,           0,            1);
+    mesh.setRotationFromMatrix(m);
+    mesh.position.x = 4.792800733836897;
+    mesh.position.y = 1.1639690751940435;
+    mesh.position.z = -1.9310194638110574;
+    markerRoot.add(mesh);
+    
+    //H7A - C7
+    bond_geom = new THREE.CylinderBufferGeometry(0.04, 0.04, 0.9896907724446972, 6, 1);
+    mesh = new THREE.Mesh(bond_geom, bond_mat);
+    m = new THREE.Matrix4();
+    m.set(0.9991197194760317, -0.041928062111453605, 0.0013504672205695584, 0,
+          0.041928062111453605, 0.9970479234244601, -0.06432321511359684, 0,
+          0.0013504672205695584, 0.06432321511359684, 0.9979282039484284, 0,
+          0,           0,           0,            1);
+    mesh.setRotationFromMatrix(m);
+    mesh.position.x = 2.3636559348922446;
+    mesh.position.y = 0.7534304111098505;
+    mesh.position.z = -0.606335782851261;
+    markerRoot.add(mesh);
+    
+    //N1 - H1
+    bond_geom = new THREE.CylinderBufferGeometry(0.04, 0.04, 0.9021640993262382, 6, 1);
+    mesh = new THREE.Mesh(bond_geom, bond_mat);
+    m = new THREE.Matrix4();
+    m.set(0.9999986491547203, -0.0016435587541162942, -2.008373492492403e-05, 0,
+          0.0016435587541162942, 0.9997000535904521, 0.024435661764497043, 0,
+          -2.008373492492403e-05, -0.024435661764497043, 0.9997014044357319, 0,
+          0,           0,           0,            1);
+    mesh.setRotationFromMatrix(m);
+    mesh.position.x = 0.9367805885768705;
+    mesh.position.y = 2.1186501401222086;
+    mesh.position.z = -0.25624511156744567;
+    markerRoot.add(mesh);
+    
+    var light = new THREE.PointLight(0xFFFFFF, 1, 500);
+    light.position.set(10, 0, 25);
+    markerRoot.add(light);
+    var ambient_light = new THREE.AmbientLight(0xFFFFFF, 1.0);
+    scene.add(ambient_light);
+	//////////////////////////////////////////////////////////////////////////////////
+	//		render the whole thing on the page
+	//////////////////////////////////////////////////////////////////////////////////
+
+	// render the scene
+	onRenderFcts.push(function(){{
+		renderer.render( scene, camera );
+	}})
+
+	// run the rendering loop
+	var lastTimeMsec= null
+	requestAnimationFrame(function animate(nowMsec){{
+		// keep looping
+		requestAnimationFrame( animate );
+		// measure time
+		lastTimeMsec	= lastTimeMsec || nowMsec-1000/60
+		var deltaMsec	= Math.min(200, nowMsec - lastTimeMsec)
+		lastTimeMsec	= nowMsec
+		// call each update function
+		onRenderFcts.forEach(function(onRenderFct){{
+			onRenderFct(deltaMsec/1000, nowMsec/1000)
+		}})
+	}})
+</script></body>
