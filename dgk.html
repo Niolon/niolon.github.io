@@ -3,7 +3,21 @@
         <script src="https://aframe.io/releases/0.9.0/aframe.min.js"></script>
         <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
     </head>
-    <body style='margin : 0px; overflow: hidden; font-family: Monospace;'>
+    <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+    <body style='margin : 0px; overflow: hidden; font-family: Monospace;'><div style='position: absolute; top: 10px; width:100%; text-align: center; z-index: 1;'></div>
+        <style>
+            .arjs-loader {
+                margin: 0 auto;
+                width: 100%;
+                height: 100%;
+                position: absolute;
+                top: 0;
+                left: 0;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+            }
+        </style>
         <a-scene embedded renderer='logarithmicDepthBuffer: true' arjs='debugUIEnabled: true; sourceType: webcam; maxDetectionRate: 30; detectionMode: mono_and_matrix; matrixCodeType: 3x3;'>
             <a-assets>
                 <a-asset-item id="urea-cc-obj" src="./obj_files/urea_cc.obj"></a-asset-item>
