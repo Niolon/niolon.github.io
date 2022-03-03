@@ -1,10 +1,10 @@
 <html>
     <head>
-        <script src="https://aframe.io/releases/1.3.0/aframe.min.js"></script>
+        <script src="https://aframe.io/releases/0.9.0/aframe.min.js"></script>
         <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
     </head>
     <body>
-        <a-scene embedded arjs>
+        <a-scene embedded arjs='sourceType: webcam; detectionMode: mono_and_matrix; matrixCodeType: 3x3;' renderer='precision: medium;'>
             <a-assets>
                 <a-asset-item id="urea-cc-obj" src="./obj_files/urea_cc.obj"></a-asset-item>
                 <a-asset-item id="urea-cc-mtl" src="./obj_files/urea_cc.mtl"></a-asset-item>
