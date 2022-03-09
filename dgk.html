@@ -19,7 +19,7 @@
             }
         </style>
         <a-scene embedded renderer='logarithmicDepthBuffer: true' arjs='debugUIEnabled: true; sourceType: webcam; maxDetectionRate: 30; detectionMode: mono_and_matrix; matrixCodeType: 3x3;'>
-            <a-assets>
+            <a-assets timeout="1000000">
                 <a-asset-item id="urea-cc-obj" src="./obj_files/urea_cc.obj"></a-asset-item>
                 <a-asset-item id="urea-cc-mtl" src="./obj_files/urea_cc.mtl"></a-asset-item>
                 <a-asset-item id="urea-noncc-obj" src="./obj_files/urea_noncc.obj"></a-asset-item>
@@ -30,8 +30,6 @@
                 <a-asset-item id="nacl-mtl" src="./obj_files/nacl.mtl"></a-asset-item>
                 <a-asset-item id="L-Ala-obj" src="./obj_files/L-Ala.obj"></a-asset-item>
                 <a-asset-item id="L-Ala-mtl" src="./obj_files/L-Ala.mtl"></a-asset-item>
-                <a-asset-item id="HMa-Mg-obj" src="./obj_files/HMa-Mg.obj"></a-asset-item>
-                <a-asset-item id="HMa-Mg-mtl" src="./obj_files/HMa-Mg.mtl"></a-asset-item>
             </a-assets>
             <a-marker type="barcode" value="0">
                 <a-entity position="0 0.0 0" rotation="0 0 0" scale="0.4 0.4 0.4" obj-model="obj: #urea-cc-obj; mtl: #urea-cc-mtl"></a-entity>
