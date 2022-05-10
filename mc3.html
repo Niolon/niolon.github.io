@@ -1,0 +1,63 @@
+<html>
+    <head>
+        <script src="https://aframe.io/releases/1.0.4/aframe.min.js"></script>
+        <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
+    </head>
+    <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+    <body style='margin : 0px; overflow: hidden; font-family: Monospace;'><div style='position: absolute; top: 10px; width:100%; text-align: center; z-index: 1;'></div>
+        <style>
+            .arjs-loader {
+                margin: 0 auto;
+                width: 100%;
+                height: 100%;
+                position: absolute;
+                top: 0;
+                left: 0;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+            }
+        </style>
+        <a-scene embedded renderer='logarithmicDepthBuffer: true' arjs='debugUIEnabled: false; sourceType: webcam; maxDetectionRate: 30; detectionMode: mono_and_matrix; matrixCodeType: 3x3;'>
+            <a-assets timeout="1000000">
+                <a-asset-item id="a-obj" src="./mc3/a.obj"></a-asset-item>
+                <a-asset-item id="a-mtl" src="./mc3/a.mtl"></a-asset-item>
+                <a-asset-item id="b-obj" src="./mc3/b.obj"></a-asset-item>
+                <a-asset-item id="b-mtl" src="./mc3/b.mtl"></a-asset-item>
+                <a-asset-item id="c-obj" src="./mc3/c.obj"></a-asset-item>
+                <a-asset-item id="c-mtl" src="./mc3/c.mtl"></a-asset-item>
+                <a-asset-item id="e-obj" src="./mc3/e.obj"></a-asset-item>
+                <a-asset-item id="e-mtl" src="./mc3/e.mtl"></a-asset-item>
+                <a-asset-item id="d1-obj" src="./mc3/d1.obj"></a-asset-item>
+                <a-asset-item id="d1-mtl" src="./mc3/d1.mtl"></a-asset-item>
+                <a-asset-item id="d2-obj" src="./mc3/d2.obj"></a-asset-item>
+                <a-asset-item id="d2-mtl" src="./mc3/d2.mtl"></a-asset-item>
+            </a-assets>
+            <a-marker type="barcode" value="0">
+                <!--rotation axes: x: barcode horizontal; y: perpendicular to barcode z: barcode vertical-->
+                <a-entity position="0 0.0 0" rotation="0 0 0" scale="0.3 0.3 0.3" obj-model="obj: #a-obj; mtl: #a-mtl"></a-entity>
+            </a-marker>
+            <a-marker type="barcode" value="1">
+                <!--rotation axes: x: barcode horizontal; y: perpendicular to barcode z: barcode vertical-->
+                <a-entity position="0 0.0 0" rotation="0 0 0" scale="0.3 0.3 0.3" obj-model="obj: #b-obj; mtl: #b-mtl"></a-entity>
+            </a-marker>
+            <a-marker type="barcode" value="2">
+                <!--rotation axes: x: barcode horizontal; y: perpendicular to barcode z: barcode vertical-->
+                <a-entity position="0 0.0 0" rotation="0 0 0" scale="0.3 0.3 0.3" obj-model="obj: #c-obj; mtl: #c-mtl"></a-entity>
+            </a-marker>
+            <a-marker type="barcode" value="3">
+                <!--rotation axes: x: barcode horizontal; y: perpendicular to barcode z: barcode vertical-->
+                <a-entity position="0 0.0 0" rotation="0 0 0" scale="0.3 0.3 0.3" obj-model="obj: #d1-obj; mtl: #d1-mtl"></a-entity>
+            </a-marker>
+            <a-marker type="barcode" value="4">
+                <!--rotation axes: x: barcode horizontal; y: perpendicular to barcode z: barcode vertical-->
+                <a-entity position="0 0.0 0" rotation="0 0 0" scale="0.3 0.3 0.3" obj-model="obj: #d2-obj; mtl: #d2-mtl"></a-entity>
+            </a-marker>
+            <a-marker type="barcode" value="5">
+                <!--rotation axes: x: barcode horizontal; y: perpendicular to barcode z: barcode vertical-->
+                <a-entity position="0 0.0 0" rotation="0 0 0" scale="0.3 0.3 0.3" obj-model="obj: #e-obj; mtl: #e-mtl"></a-entity>
+            </a-marker>
+            <a-entity camera></a-entity>
+        </a-scene>
+    </body>
+</html>
