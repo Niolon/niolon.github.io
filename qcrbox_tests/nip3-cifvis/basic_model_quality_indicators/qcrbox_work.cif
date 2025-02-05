@@ -1,0 +1,7 @@
+data_2305139
+_refine.diff_density_max          0.4959
+_refine.diff_density_min          -0.3414
+_refine_ls.d_res_high             0.5458
+_refine_ls.goodness_of_fit_ref    1.0019
+_refine_ls.r_factor_all           0.0591
+_refine_ls.wr_factor_gt           0.0775
